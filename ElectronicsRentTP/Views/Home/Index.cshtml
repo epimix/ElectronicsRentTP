@@ -1,8 +1,17 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@model List<Equipment>
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">
+        Welcome to Equipment Rental
+        <img width="50" src="https://pngimg.com/d/ukraine_PNG16.png" alt="Ukraine" />
+    </h1>
+</div>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    @foreach (var i in Model)
+    {
+        <div class="col">
+            <partial name="_EquipmentCardPartial" model="@i" />
+        </div>
+    }
 </div>
