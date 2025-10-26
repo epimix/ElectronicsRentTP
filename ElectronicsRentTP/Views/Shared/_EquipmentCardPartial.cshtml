@@ -1,0 +1,15 @@
+@model Equipment
+
+<div class="card h-100">
+    <img src="@Model.ImageUrl" class="card-img-top" alt="Equipment" onerror="this.src='https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg'">
+    <div class="card-body">
+        <h5 class="card-title">@Model.Name</h5>
+        <p class="card-text">@Model.Category?.Name - $@Model.PricePerHour/hour</p>
+        <p class="card-text small">@Model.Description</p>
+    </div>
+    <div class="card-footer">
+        <a asp-controller="Equipment" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary">View Details</a>
+        <a asp-controller="Favorite" asp-action="Add" asp-route-id="@Model.Id" class="btn btn-success">Add to Favorite</a>
+    </div>
+</div>
+

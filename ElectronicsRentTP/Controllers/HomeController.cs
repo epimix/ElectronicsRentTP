@@ -1,21 +1,24 @@
-using System.Diagnostics;
+using DataAccess.Data;
 using ElectronicsRentTP.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace ElectronicsRentTP.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly EquipmentRentalDbContext ctx;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(EquipmentRentalDbContext ctx)
         {
-            _logger = logger;
+            this.ctx = ctx;
         }
 
         public IActionResult Index()
         {
-            return View();
+            var equipment = ctx.Equipments.Include(x => x.Category).ToList();
+            return View(equipment);
         }
 
         public IActionResult Privacy()

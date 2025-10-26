@@ -1,0 +1,38 @@
+@model Equipment
+
+<div class="row">
+    <div class="col-md-5 text-center">
+        <img src="@(Model.ImageUrl ?? "https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg")" alt="@Model.Name" class="img-fluid rounded" />
+    </div>
+    <div class="col-md-7">
+        <h2>@Model.Name</h2>
+        <p class="text-muted">Category: @Model.Category?.Name</p>
+        <p>
+            <b>Price per Hour:</b> $@Model.PricePerHour
+        </p>
+        <p>
+            <b>Quantity Available:</b> @Model.Quantity
+        </p>
+        <p>
+            <b>Status:</b>
+            @if (Model.IsAvailable)
+            {
+                <span class="badge bg-success">Available</span>
+            }
+            else
+            {
+                <span class="badge bg-warning">Unavailable</span>
+            }
+        </p>
+        <div>
+            <b>Description:</b>
+            <p>@(string.IsNullOrWhiteSpace(Model.Description) ? "Description not available" : Model.Description)</p>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <a asp-action="Index" class="btn btn-dark">Back</a>
+            <a asp-controller="Favorite" asp-action="Add" asp-route-id="@Model.Id" class="btn btn-primary">Add to Favorite</a>
+        </div>
+    </div>
+</div>
+

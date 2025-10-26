@@ -1,0 +1,74 @@
+@model List<Equipment>
+
+<h1>Equipment List</h1>
+
+<a asp-action="Create" class="btn btn-primary my-1">Add New Equipment</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Photo</th>
+            <th scope="col">Name</th>
+            <th scope="col">Category</th>
+            <th scope="col">Price/Hour</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Available</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var i in Model)
+        {
+            <tr class="align-middle">
+                <th scope="row">@i.Id</th>
+                <td class="grid-item-main-image">
+                    <img src="@(i.ImageUrl ?? "https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg")" alt="@i.Name" height="50" />
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@i.Id">@i.Name</a>
+                </td>
+                <td>@i.Category?.Name</td>
+                <td>$@i.PricePerHour</td>
+                <td>@i.Quantity</td>
+                <td>
+                    @if (i.IsAvailable)
+                    {
+                        <span class="badge bg-success">Available</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning">Unavailable</span>
+                    }
+                </td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a asp-action="Edit" asp-route-id="@i.Id" class="btn btn-outline-warning">Edit</a>
+                        <a data-bs-id="@i.Id" data-bs-title="@i.Name" data-bs-toggle="modal" data-bs-target="#deleteConfirmDialog" class="btn btn-outline-danger">Delete</a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.Count == 0)
+{
+    <div class="text-center">
+        <img width="500" src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-concept-illustration-svg-png-download-2902554.png" alt="Empty" />
+    </div>
+}
+
+<partial name="_ConfirmModalDialogPartial" model=@(new ConfirmDialogModel() {
+         DialogId = "deleteConfirmDialog",
+         Mode = DialogType.danger,
+         Message = "Do you want to delete this equipment?",
+         Title = "Delete Confirmation" }) />
+
+@section Scripts
+{
+    <script>
+        configConfirmModal('deleteConfirmDialog', '/Equipment/Delete/');
+    </script>
+}
+
