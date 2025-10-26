@@ -16,10 +16,32 @@ namespace DataAccess.Data
         public DbSet<Rental> Rentals { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Maintenance> Maintenances { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; } = default!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Rental>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Rentals)
+                .HasForeignKey(r => r.UserId);
+            modelBuilder.Entity<Equipment>()
+                .Property(e => e.PricePerHour)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Maintenance>()
+                .Property(m => m.Cost)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Rental>()
+                .Property(r => r.TotalPrice)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Balance)
+                .HasColumnType("decimal(18,2)");
 
             // Seed initial categories
             modelBuilder.Entity<EquipmentCategory>().HasData(

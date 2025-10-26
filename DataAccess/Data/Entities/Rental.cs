@@ -14,7 +14,7 @@ namespace DataAccess.Data.Entities
         public int EquipmentId { get; set; }
         public Equipment Equipment { get; set; }
 
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public User User { get; set; }
 
         public DateTime StartDate { get; set; }

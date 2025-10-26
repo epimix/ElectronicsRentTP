@@ -1,4 +1,7 @@
-﻿using DataAccess.Data;
+﻿using BusinessLogic;
+using BusinessLogic.Interfaces;
+using BusinessLogic.Services;
+using DataAccess.Data;
 using DataAccess.Data.Entities;
 using DataAccess.Repositories;
 using ElectronicsRentTP.Interfaces;
@@ -22,6 +25,11 @@ builder.Services.AddIdentity<User, IdentityRole>()
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IFavService, FavoriteService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IUserServices, UserServices>();
+
+builder.Services.AddSingleton(_ => builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()!);
+
 
 builder.Services.AddControllersWithViews();
 
