@@ -1,0 +1,43 @@
+﻿@model ElectronicsRentTP.Models.RegisterViewModel
+
+<h2>Registration</h2>
+
+<form asp-action="Register" method="post">
+    <div>
+        <label>Email</label>
+        <input asp-for="Email" />
+        <span asp-validation-for="Email"></span>
+    </div>
+
+    <div>
+        <label>Password</label>
+        <input asp-for="Password" type="password" />
+        <span asp-validation-for="Password"></span>
+    </div>
+
+    <div>
+        <label>Confirm Password</label>
+        <input asp-for="ConfirmPassword" type="password" />
+        <span asp-validation-for="ConfirmPassword"></span>
+    </div>
+
+    <div>
+        <label>Full name</label>
+        <input asp-for="FullName" />
+        <span asp-validation-for="FullName"></span>
+    </div>
+
+    <div>
+        <label>Birth Date</label>
+        <input asp-for="Birthdate" type="date" />
+        <span asp-validation-for="Birthdate"></span>
+    </div>
+
+    <button type="submit">Registrate</button>
+</form>
+
+<p>Already have account? <a asp-action="Login">Login</a></p>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
