@@ -33,6 +33,16 @@
                                 Favorite(@FavoriteService.GetFavSize())
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Rentals" asp-action="MyBookings">
+                                My bookings
+                            </a>
+                        </li>
+                        <li class ="nav-item">
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                    <button type="submit" class="btn btn-danger">Logout</button>
+                                </form>
+                        </li>
                     </ul>
                 </div>
             </div>

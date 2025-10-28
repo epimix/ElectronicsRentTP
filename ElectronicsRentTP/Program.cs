@@ -4,11 +4,13 @@ using BusinessLogic.Services;
 using DataAccess.Data;
 using DataAccess.Data.Entities;
 using DataAccess.Repositories;
+using ElectronicsRentTP.Extensions;
 using ElectronicsRentTP.Interfaces;
 using ElectronicsRentTP.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,8 +31,11 @@ builder.Services.AddScoped<IFavService, FavoriteService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IUserServices, UserServices>();
 
-builder.Services.AddSingleton(_ => builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()!);
 
+builder.Services.AddSingleton(_ => builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()!);
+var jwtOpts = builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()!;
+
+builder.Services.AddJWTSettings(jwtOpts);
 
 builder.Services.AddControllersWithViews();
 
@@ -42,6 +47,7 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+builder.Services.AddSession();
 
 var app = builder.Build();
 
@@ -53,6 +59,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseMiddleware<ElectronicsRentTP.Middleware.AuthTokenMiddleware>();
 
 app.UseRouting();
 

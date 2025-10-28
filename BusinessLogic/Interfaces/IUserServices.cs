@@ -10,8 +10,7 @@ namespace BusinessLogic.Interfaces
 {
     public interface IUserServices
     {
-        public interface IUserServices
-        {
+
             Task Register(User user, string password);
             Task<User?> Login(string login, string password, string? ipAddress);
             Task Logout();
@@ -20,6 +19,6 @@ namespace BusinessLogic.Interfaces
             Task Delete(string id);
             Task Update(User user);
             Task ResetPassword(string email, string newPassword);
-        }
+        
     }
 }
