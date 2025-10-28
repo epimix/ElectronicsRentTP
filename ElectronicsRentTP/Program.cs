@@ -24,6 +24,7 @@ builder.Services.AddIdentity<User, IdentityRole>()
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 builder.Services.AddScoped<IFavService, FavoriteService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IUserServices, UserServices>();

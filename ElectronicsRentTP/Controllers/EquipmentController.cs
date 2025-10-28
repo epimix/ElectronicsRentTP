@@ -5,30 +5,33 @@ using DataAccess.Data.Entities;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ElectronicsRentTP.Extensions;
 using ElectronicsRentTP.Models;
+using BusinessLogic.Interfaces;
 
 namespace ElectronicsRentTP.Controllers
 {
     public class EquipmentController : Controller
     {
         private readonly EquipmentRentalDbContext ctx;
-
-        public EquipmentController(EquipmentRentalDbContext ctx)
+        private readonly IEquipmentService eq;
+        public EquipmentController(EquipmentRentalDbContext ctx, IEquipmentService eq)
         {
             this.ctx = ctx;
+            this.eq = eq;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             // LEFT JOIN
             var model = ctx.Equipments.Include(x => x.Category).ToList();
+            var models = await eq.GetAll(null, null, null, null, null, null, null, 1);
 
-            return View(model);
+            return View(models);
         }
 
         [HttpGet]
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var equipment = ctx.Equipments.Include(x => x.Category).FirstOrDefault(x => x.Id == id);
+            var equipment = await eq.GetById(id);
             if (equipment == null) return NotFound();
 
             return View(equipment);
@@ -43,38 +46,24 @@ namespace ElectronicsRentTP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Equipment equipment)
+        public async Task<IActionResult> Create(Equipment equipment)
         {
-            // Log ModelState errors for debugging
             if (!ModelState.IsValid)
             {
-                foreach (var error in ModelState)
-                {
-                    foreach (var message in error.Value.Errors)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Key: {error.Key}, Error: {message.ErrorMessage}");
-                    }
-                }
+                SetCategoriesToViewBag();
+                return View(equipment);
             }
 
-            if (ModelState.IsValid)
-            {
-                ctx.Equipments.Add(equipment);
-                ctx.SaveChanges();
+            await eq.AddEquipment(equipment);
+            TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment created successfully!"));
 
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment created successfully!"));
-
-                return RedirectToAction("Index");
-            }
-
-            SetCategoriesToViewBag();
-            return View(equipment);
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var equipment = ctx.Equipments.Find(id);
+            var equipment = await eq.GetById(id);
             if (equipment == null) return NotFound();
 
             SetCategoriesToViewBag();
@@ -83,34 +72,29 @@ namespace ElectronicsRentTP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Equipment equipment)
+        public async Task<IActionResult> Edit(Equipment equipment)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                ctx.Equipments.Update(equipment);
-                ctx.SaveChanges();
-
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment updated successfully!"));
-
-                return RedirectToAction("Index");
+                SetCategoriesToViewBag();
+                return View(equipment);
             }
 
-            SetCategoriesToViewBag();
-            return View(equipment);
+            await eq.UpdateEquipment(equipment);
+            TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment updated successfully!"));
+
+            return RedirectToAction("Index");
         }
 
-        public IActionResult Delete(int id)
+
+        public async Task<IActionResult> Delete(int id)
         {
-            var equipment = ctx.Equipments.Find(id);
-            if (equipment == null) return NotFound();
-
-            ctx.Equipments.Remove(equipment);
-            ctx.SaveChanges(); // submit changes to DB
-
+            await eq.DeleteEquipment(id);
             TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment deleted successfully!"));
 
             return RedirectToAction("Index");
         }
+
 
         private void SetCategoriesToViewBag()
         {

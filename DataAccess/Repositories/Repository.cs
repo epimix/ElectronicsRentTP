@@ -52,12 +52,14 @@ namespace DataAccess.Repositories
             }
         }
 
-        public async Task<IReadOnlyList<T>> GetAllAsync(int? pageNumber = 1, int pageSize = 5, Expression<Func<T, bool>>? filtering = null, params string[]? includes)
+        public async Task<IReadOnlyList<T>> GetAllAsync(
+            int? pageNumber = 1,
+            int pageSize = 10,
+            Expression<Func<T, bool>>? filtering = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            params string[]? includes)
         {
             var query = set.AsQueryable();
-
-            if (pageNumber != null)
-                query = await query.PaginateAsync(pageNumber.Value, pageSize);
 
             if (filtering != null)
                 query = query.Where(filtering);
@@ -66,6 +68,16 @@ namespace DataAccess.Repositories
                 foreach (var prop in includes)
                     query = query.Include(prop);
 
+            if (orderBy != null)
+                query = orderBy(query);
+            else
+                query = query.OrderBy(x => 0); // fallback щоб уникнути попередження EF
+
+            int totalBefore = await query.CountAsync();
+
+            query = query.Skip((pageNumber!.Value - 1) * pageSize).Take(pageSize);
+
+            int totalAfter = await query.CountAsync();
             return await query.ToListAsync();
         }
 
