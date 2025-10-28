@@ -1,3 +1,4 @@
+using BusinessLogic.Interfaces;
 using DataAccess.Data;
 using ElectronicsRentTP.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -8,16 +9,17 @@ namespace ElectronicsRentTP.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly EquipmentRentalDbContext ctx;
+        private readonly IEquipmentService eq;
 
-        public HomeController(EquipmentRentalDbContext ctx)
+        public HomeController(IEquipmentService eq)
         {
-            this.ctx = ctx;
+            this.eq = eq;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var equipment = ctx.Equipments.Include(x => x.Category).ToList();
+            var equipment = await eq.GetAll(null, null, null, null, null,null,null, 1 );
+            //var equipment = ctx.Equipments.Include(x => x.Category).ToList();
             return View(equipment);
         }
 

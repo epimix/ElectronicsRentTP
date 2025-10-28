@@ -12,10 +12,10 @@ namespace DataAccess.Repositories
     {
         Task<IReadOnlyList<T>> GetAllAsync(
             int? pageNumber = 1,
-            int pageSize = 5,
+            int pageSize = 10,
             Expression<Func<T, bool>>? filtering = null,
-            params string[]? includes
-            );
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            params string[]? includes);
         Task<T?> GetByIdAsync(int id);
         Task AddAsync(T entity);
         Task UpdateAsync(T entity);

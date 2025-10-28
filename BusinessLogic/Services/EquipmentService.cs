@@ -51,22 +51,17 @@ namespace BusinessLogic.Services
             if (IsAvailable != null)
                 filterEx = filterEx.And(x => x.IsAvailable == IsAvailable.Value);
 
-            var items = await repo.GetAllAsync(filtering: filterEx, includes: nameof(Equipment.Category));
+            var items = await repo.GetAllAsync(
+                pageNumber: pageNumber,
+                pageSize: 10,
+                filtering: filterEx,
+                includes: nameof(Equipment.Category),
+                orderBy: q => SortPriceAsc ?? true ? q.OrderBy(x => x.Id) : q.OrderByDescending(x => x.Id)
+            );
 
-            if (SortPriceAsc != null)
-            {
-                items = SortPriceAsc.Value
-                    ? items.OrderBy(x => x.PricePerHour).ToList()
-                    : items.OrderByDescending(x => x.PricePerHour).ToList();
-            }
-
-            int pageSize = 5;
-            var res = items.Skip((pageNumber - 1) * pageSize)
-                         .Take(pageSize)
-                         .ToList();
-
-            return res;
+            return items.ToList();
         }
+
 
         public async Task AddEquipment(Equipment equipment)
         {
