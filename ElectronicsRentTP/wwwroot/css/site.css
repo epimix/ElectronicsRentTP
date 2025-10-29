@@ -32,3 +32,30 @@ body {
 .grid-item-main-image img:hover {
   transform: scale(2.5);
 }
+
+/* Modern theming additions */
+.app-bg {
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+}
+
+.navbar-gradient {
+  background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+  backdrop-filter: saturate(140%) blur(6px);
+}
+
+.card.shadow-sm.border-0 {
+  border-radius: 0.75rem;
+}
+
+.navbar .nav-link {
+  font-weight: 500;
+}
+
+.navbar .nav-link.active,
+.navbar .nav-link:hover {
+  opacity: 0.9;
+}
+
+.dropdown-menu {
+  border-radius: 0.5rem;
+}
