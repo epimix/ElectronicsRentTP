@@ -1,6 +1,185 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
+﻿@*
+  Privacy Policy Razor View (cshtml)
+  English version for a household appliance rental & booking website.
+*@
+@{
+    Layout = null;
 }
-<h1>@ViewData["Title"]</h1>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Privacy Policy — Appliance Rental</title>
+    <meta name="description" content="Privacy policy for appliance rental and booking website." />
+    <style>
+        :root{
+          --cream:#fff8ef;
+          --soft-cream:#fff3e6;
+          --accent:#f6c84c;
+          --muted:#6b6b6b;
+          --card:#fffefc;
+          --radius:14px;
+          --max-width:900px;
+          --glass: rgba(255,255,255,0.6);
+          font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+        }
+        html,body{height:100%;background:linear-gradient(180deg,var(--cream),var(--soft-cream));margin:0;padding:32px;color:#222}
+        .container{max-width:var(--max-width);margin:0 auto;background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(32,32,32,0.07);overflow:hidden}
+        header{display:flex;gap:18px;align-items:center;padding:28px}
+        .brand{display:flex;gap:14px;align-items:center}
+        .logo{width:84px;height:84px;flex:0 0 84px}
+        h1{margin:0;font-size:20px}
+        p.lead{margin:4px 0 0;color:var(--muted)}
+        main{padding:28px;border-top:1px solid rgba(0,0,0,0.04)}
+        section{margin-bottom:18px}
+        h2{font-size:16px;margin:0 0 8px}
+        ul{margin:8px 0 0;padding-left:20px;color:var(--muted)}
+        .meta{font-size:13px;color:var(--muted);margin-bottom:12px}
+        .smiley{display:flex;align-items:center;gap:12px}
+        .smiley svg{filter:drop-shadow(0 6px 12px rgba(0,0,0,0.08))}
+        footer{background:linear-gradient(0deg,rgba(0,0,0,0.02),transparent);padding:16px;border-top:1px solid rgba(0,0,0,0.03);font-size:13px;color:var(--muted);text-align:center}
+        a{color:#1b6cff;text-decoration:none}
+        .cta{display:inline-block;margin-top:10px;padding:8px 12px;background:var(--accent);border-radius:10px;color:#222;font-weight:600;text-decoration:none}
+        
+    </style>
+</head>
+<body>
+    <div class="container" role="main">
+        <header>
+            <div class="brand">
+                <div class="logo" aria-hidden="true">
 
-<p>Use this page to detail your site's privacy policy.</p>
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" role="img" aria-label="Smiley saying nu-nu-nu">
+                        <defs>
+                            <linearGradient id="g" x1="0" x2="1">
+                                <stop offset="0" stop-color="#ffdf6b" />
+                                <stop offset="1" stop-color="#f6c84c" />
+                            </linearGradient>
+                        </defs>
+
+                        <circle cx="100" cy="95" r="60" fill="url(#g)" stroke="#f0b92b" stroke-width="3" />
+
+                        <ellipse cx="80" cy="85" rx="8" ry="6" fill="#3b3b3b" />
+                        <ellipse cx="120" cy="85" rx="8" ry="6" fill="#3b3b3b" />
+
+                        <path d="M75 115 Q100 135 125 115" stroke="#3b3b3b" stroke-width="4" fill="none" stroke-linecap="round" />
+
+                        <path d="M68 74 Q80 66 92 74" stroke="#3b3b3b" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.9" />
+
+
+                        <g transform="translate(60,75) scale(0.65)">
+                            <path d="M90 90 C90 60 60 50 40 60 C28 68 18 88 20 104 C22 120 40 134 70 132 C92 130 110 114 110 94 C110 86 104 78 96 76 C104 74 110 68 110 60 C110 52 102 44 90 44z" fill="#f6c84c" stroke="#e0ad2e" stroke-width="3" />
+                            <path d="M36 68 L66 36" stroke="#e0ad2e" stroke-width="5" stroke-linecap="round" />
+                        </g>
+
+                        <g>
+                            <rect x="110" y="20" rx="8" ry="8" width="70" height="34" fill="#fff" stroke="#f0e6d9" />
+                            <text x="145" y="42" font-family="Inter, Arial" font-size="12" fill="#333" text-anchor="middle">nu‑nu‑nu</text>
+                        </g>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Privacy Policy</h1>
+                    <p class="lead">Appliance rental &amp; booking — effective date: <strong>October 29, 2025</strong></p>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <section class="meta">Last updated: October 29, 2025 · This policy explains what data we collect and how we use it.</section>
+
+            <section>
+                <h2>1. Introduction</h2>
+                <p>Welcome! We operate an appliance rental and booking service ("the Service"). Your privacy matters — this document explains which personal and non-personal data we collect, why we collect it, how we store it, and what rights you have.</p>
+            </section>
+
+            <section>
+                <h2>2. Data we collect</h2>
+                <ul>
+                    <li><strong>Account data:</strong> name, email, phone number, address for billing and delivery.</li>
+                    <li><strong>Booking data:</strong> reservation dates, selected appliances, rental period, payment references.</li>
+                    <li><strong>Payment data:</strong> payment tokens provided by third-party payment processors (we do not store full card details).</li>
+                    <li><strong>Usage data:</strong> logs, IP addresses, device and browser metadata, and pages visited to help improve the Service.</li>
+                    <li><strong>Support data:</strong> correspondence with our support team (messages, attachments).</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>3. How we use your data</h2>
+                <ul>
+                    <li>To create and manage your account and reservations.</li>
+                    <li>To process payments via trusted third-party payment providers.</li>
+                    <li>To arrange deliveries, pickups, and customer support.</li>
+                    <li>To improve the website, diagnose issues, and analyze usage trends.</li>
+                    <li>To comply with legal obligations and prevent fraud.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>4. Sharing and third parties</h2>
+                <p>We share data only when necessary:</p>
+                <ul>
+                    <li>With payment processors to complete transactions.</li>
+                    <li>With delivery partners to fulfill rentals (name, address, phone, and booking details).</li>
+                    <li>With service providers (hosting, analytics) under contract and confidentiality rules.</li>
+                    <li>When required by law or to protect rights and safety.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>5. Cookies &amp; tracking</h2>
+                <p>We use cookies and similar technologies to operate the site and measure performance. You can manage cookie preferences in your browser. Essential cookies are necessary for core features (logins, reservations).</p>
+            </section>
+
+            <section>
+                <h2>6. Data retention</h2>
+                <p>We keep personal data only as long as needed to provide the Service, comply with legal obligations, resolve disputes, or enforce agreements. When no longer required, we delete or anonymize personal data.</p>
+            </section>
+
+            <section>
+                <h2>7. Your rights</h2>
+                <ul>
+                    <li>Access: request a copy of your personal data.</li>
+                    <li>Rectification: correct incomplete or inaccurate data.</li>
+                    <li>Deletion: ask us to erase your personal data (subject to legal exceptions).</li>
+                    <li>Restriction &amp; portability: request limits on processing or a portable copy of your data.</li>
+                    <li>Objection: object to certain processing such as direct marketing.</li>
+                </ul>
+                <p>To exercise your rights, contact us at <a href="mailto:wedontreallycare@gmail.com">wedontreallycare@gmail.com</a>.</p>
+            </section>
+
+            <section>
+                <h2>8. Security</h2>
+                <p>We use technical and organizational measures to protect data (encryption in transit, access controls, regular audits). No system is 100% secure — if a breach occurs, we will notify affected users and authorities as required by law.</p>
+            </section>
+
+            <section>
+                <h2>9. International transfers</h2>
+                <p>If personal data is transferred outside your country, we rely on appropriate safeguards (e.g., standard contractual clauses) or process it within regions that provide adequate protection.</p>
+            </section>
+
+            <section>
+                <h2>10. Children</h2>
+                <p>The Service is intended for users aged 18 and over. We do not knowingly collect personal data from children under 16. If you believe we have collected such data, contact us and we will remove it.</p>
+            </section>
+
+            <section>
+                <h2>11. Changes to this policy</h2>
+                <p>We may update this Privacy Policy from time to time. Material changes will be posted with a revised "Last updated" date. Continued use of the Service after changes constitutes acceptance.</p>
+            </section>
+
+            <section>
+                <h2>12. Contact</h2>
+                <p>Questions or requests? Email us at <a href="mailto:wedontreallycare@gmail.com">wedontreallycare@gmail.com</a> or write to:</p>
+                <address style="color:var(--muted);font-size:13px">Appliance Rentals Ltd.<br />123 Rental Lane<br />City, Country</address>
+                <a class="cta" href="mailto:wedontreallycare@gmail.com">Contact privacy team</a>
+            </section>
+        </main>
+
+        <footer>
+            © Appliance Rentals — Privacy &amp; Safety. Effective date: October 29, 2025.
+        </footer>
+    </div>
+</body>
+</html>

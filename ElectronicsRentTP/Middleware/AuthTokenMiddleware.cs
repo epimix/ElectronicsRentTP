@@ -31,7 +31,7 @@ namespace ElectronicsRentTP.Middleware
             var path = context.Request.Path;
 
 
-            if (path == "/" ||
+            if (
                 path.StartsWithSegments("/Account/Login") ||
                 path.StartsWithSegments("/Account/Register") ||
                 path.StartsWithSegments("/css") ||
