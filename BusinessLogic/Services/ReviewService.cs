@@ -30,6 +30,8 @@ namespace BusinessLogic.Services
             var eq = await eqRepo.GetByIdAsync(review.EquipmentId);
             if (eq == null) return;
 
+            eq.reviews.Remove(review);
+
             eq.ReviewCount--;
             eq.ReviewSum -= review.Rating;
             eq.AverageRating = eq.ReviewCount > 0
@@ -100,6 +102,8 @@ namespace BusinessLogic.Services
             };
 
             await repo.AddAsync(review);
+
+            equipment.reviews.Add(review);
 
             equipment.ReviewCount++;
             equipment.ReviewSum += rating;

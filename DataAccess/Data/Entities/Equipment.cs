@@ -37,7 +37,7 @@ namespace DataAccess.Data.Entities
         public int Quantity { get; set; }
 
         public string? ImageUrl { get; set; }
-
+        public ICollection<Review> reviews { get; set; } = new List<Review>();
         public ICollection<Rental> Rentals { get; set; } = new List<Rental>();
     }
 }

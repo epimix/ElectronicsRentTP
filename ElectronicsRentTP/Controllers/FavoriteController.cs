@@ -23,6 +23,7 @@ namespace ElectronicsRentTP.Controllers
 
             var items = ctx.Equipments
                 .Include(x => x.Category)
+                .Include(x => x.reviews)
                 .Where(x => existingIds.Contains(x.Id))
                 .ToList();
 
