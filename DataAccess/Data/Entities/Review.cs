@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Data.Entities
 {
-    public class Review // Відгуки про техніку після завершення оренди
+    public class Review : BaseEntity // Відгуки про техніку після завершення оренди
     {
         public int Id { get; set; }
         public int EquipmentId { get; set; }

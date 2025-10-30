@@ -26,6 +26,9 @@ namespace DataAccess.Data.Entities
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
         public decimal PricePerHour { get; set; }
+        public int ReviewCount { get; set; } = 0;
+        public int ReviewSum { get; set; } = 0;
+        public decimal AverageRating { get; set; } = 0;
 
         public bool IsAvailable { get; set; }
 
@@ -34,7 +37,7 @@ namespace DataAccess.Data.Entities
         public int Quantity { get; set; }
 
         public string? ImageUrl { get; set; }
-
+        public ICollection<Review> reviews { get; set; } = new List<Review>();
         public ICollection<Rental> Rentals { get; set; } = new List<Rental>();
     }
 }

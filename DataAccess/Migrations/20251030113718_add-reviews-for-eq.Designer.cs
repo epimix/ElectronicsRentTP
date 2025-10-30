@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(EquipmentRentalDbContext))]
-    [Migration("20251026133146_SeedEquipmentData")]
-    partial class SeedEquipmentData
+    [Migration("20251030113718_add-reviews-for-eq")]
+    partial class addreviewsforeq
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,6 +32,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AverageRating")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
@@ -57,6 +60,12 @@ namespace DataAccess.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReviewSum")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -67,68 +76,86 @@ namespace DataAccess.Migrations
                         new
                         {
                             Id = 1,
+                            AverageRating = 0m,
                             CategoryId = 6,
                             Description = "Professional mirrorless camera with 8K video recording and 45MP full-frame sensor",
-                            ImageUrl = "https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=500",
+                            ImageUrl = "https://cdn.media.amplience.net/i/canon/eos-r5_front_rf24-105mmf4lisusm_square_32c26ad194234d42b3cd9e582a21c99b",
                             IsAvailable = true,
                             Name = "Canon EOS R5 Camera",
                             PricePerHour = 50m,
-                            Quantity = 2
+                            Quantity = 2,
+                            ReviewCount = 0,
+                            ReviewSum = 0
                         },
                         new
                         {
                             Id = 2,
+                            AverageRating = 0m,
                             CategoryId = 5,
                             Description = "High-quality wireless microphone for professional audio recording",
-                            ImageUrl = "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500",
+                            ImageUrl = "https://sony.scene7.com/is/image/sonyglobalsolutions/ULTMIC1_Intro2_M?$productIntroPlatemobile$&fmt=png-alpha",
                             IsAvailable = true,
                             Name = "Sony Wireless Microphone",
                             PricePerHour = 15m,
-                            Quantity = 5
+                            Quantity = 5,
+                            ReviewCount = 0,
+                            ReviewSum = 0
                         },
                         new
                         {
                             Id = 3,
+                            AverageRating = 0m,
                             CategoryId = 4,
                             Description = "Powerful laptop for video editing and content creation",
-                            ImageUrl = "https://images.unsplash.com/photo-1541807084-5cc52b6b58f2?w=500",
+                            ImageUrl = "https://bigmag.ua/image/cache/catalog/image/Product/Apple_MacBook_BY/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019%201(1)-2000x2000.jpg",
                             IsAvailable = true,
                             Name = "MacBook Pro 16",
                             PricePerHour = 30m,
-                            Quantity = 3
+                            Quantity = 3,
+                            ReviewCount = 0,
+                            ReviewSum = 0
                         },
                         new
                         {
                             Id = 4,
+                            AverageRating = 0m,
                             CategoryId = 6,
                             Description = "Professional drone with 4K camera and obstacle avoidance",
                             ImageUrl = "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=500",
                             IsAvailable = true,
                             Name = "DJI Mini 4 Pro Drone",
                             PricePerHour = 40m,
-                            Quantity = 1
+                            Quantity = 1,
+                            ReviewCount = 0,
+                            ReviewSum = 0
                         },
                         new
                         {
                             Id = 5,
+                            AverageRating = 0m,
                             CategoryId = 9,
                             Description = "High-quality PA speakers for events and presentations",
-                            ImageUrl = "https://images.unsplash.com/photo-1608043152269-0d6e1c6920b7?w=500",
+                            ImageUrl = "https://thumbs.static-thomann.de/thumb/padthumb600x600/pics/bdb/_51/519347/16724814_800.jpg",
                             IsAvailable = true,
                             Name = "Bose Professional Speakers",
                             PricePerHour = 25m,
-                            Quantity = 2
+                            Quantity = 2,
+                            ReviewCount = 0,
+                            ReviewSum = 0
                         },
                         new
                         {
                             Id = 6,
+                            AverageRating = 0m,
                             CategoryId = 7,
                             Description = "Professional 4K projector with 5000 lumens brightness",
-                            ImageUrl = "https://images.unsplash.com/photo-1611339555311-eaa078c1319d?w=500",
+                            ImageUrl = "https://musicmag.com.ua/media/catalog/product/cache/1/image/736x460/62defc7f46f3fbfc8afcd112227d1181/e/p/epson_pro_cinema_4040_front.jpg",
                             IsAvailable = true,
                             Name = "Epson Projector 4K",
                             PricePerHour = 35m,
-                            Quantity = 2
+                            Quantity = 2,
+                            ReviewCount = 0,
+                            ReviewSum = 0
                         });
                 });
 
@@ -229,6 +256,45 @@ namespace DataAccess.Migrations
                     b.ToTable("Maintenances");
                 });
 
+            modelBuilder.Entity("DataAccess.Data.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByIp")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("Revoked")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RevokedByIp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("DataAccess.Data.Entities.Rental", b =>
                 {
                     b.Property<int>("Id")
@@ -252,17 +318,15 @@ namespace DataAccess.Migrations
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EquipmentId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Rentals");
                 });
@@ -288,17 +352,15 @@ namespace DataAccess.Migrations
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EquipmentId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
                 });
@@ -536,6 +598,17 @@ namespace DataAccess.Migrations
                     b.Navigation("Equipment");
                 });
 
+            modelBuilder.Entity("DataAccess.Data.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("DataAccess.Data.Entities.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DataAccess.Data.Entities.Rental", b =>
                 {
                     b.HasOne("DataAccess.Data.Entities.Equipment", "Equipment")
@@ -545,8 +618,10 @@ namespace DataAccess.Migrations
                         .IsRequired();
 
                     b.HasOne("DataAccess.Data.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId1");
+                        .WithMany("Rentals")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Equipment");
 
@@ -556,14 +631,16 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("DataAccess.Data.Entities.Review", b =>
                 {
                     b.HasOne("DataAccess.Data.Entities.Equipment", "Equipment")
-                        .WithMany()
+                        .WithMany("reviews")
                         .HasForeignKey("EquipmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DataAccess.Data.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Equipment");
 
@@ -624,11 +701,20 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("DataAccess.Data.Entities.Equipment", b =>
                 {
                     b.Navigation("Rentals");
+
+                    b.Navigation("reviews");
                 });
 
             modelBuilder.Entity("DataAccess.Data.Entities.EquipmentCategory", b =>
                 {
                     b.Navigation("Equipments");
+                });
+
+            modelBuilder.Entity("DataAccess.Data.Entities.User", b =>
+                {
+                    b.Navigation("RefreshTokens");
+
+                    b.Navigation("Rentals");
                 });
 #pragma warning restore 612, 618
         }

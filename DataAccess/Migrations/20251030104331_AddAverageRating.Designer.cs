@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(EquipmentRentalDbContext))]
-    [Migration("20251026193253_UpdateUser")]
-    partial class UpdateUser
+    [Migration("20251030104331_AddAverageRating")]
+    partial class AddAverageRating
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,6 +32,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AverageRating")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
@@ -67,6 +70,7 @@ namespace DataAccess.Migrations
                         new
                         {
                             Id = 1,
+                            AverageRating = 0m,
                             CategoryId = 6,
                             Description = "Professional mirrorless camera with 8K video recording and 45MP full-frame sensor",
                             ImageUrl = "https://cdn.media.amplience.net/i/canon/eos-r5_front_rf24-105mmf4lisusm_square_32c26ad194234d42b3cd9e582a21c99b",
@@ -78,6 +82,7 @@ namespace DataAccess.Migrations
                         new
                         {
                             Id = 2,
+                            AverageRating = 0m,
                             CategoryId = 5,
                             Description = "High-quality wireless microphone for professional audio recording",
                             ImageUrl = "https://sony.scene7.com/is/image/sonyglobalsolutions/ULTMIC1_Intro2_M?$productIntroPlatemobile$&fmt=png-alpha",
@@ -89,6 +94,7 @@ namespace DataAccess.Migrations
                         new
                         {
                             Id = 3,
+                            AverageRating = 0m,
                             CategoryId = 4,
                             Description = "Powerful laptop for video editing and content creation",
                             ImageUrl = "https://bigmag.ua/image/cache/catalog/image/Product/Apple_MacBook_BY/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019%201(1)-2000x2000.jpg",
@@ -100,6 +106,7 @@ namespace DataAccess.Migrations
                         new
                         {
                             Id = 4,
+                            AverageRating = 0m,
                             CategoryId = 6,
                             Description = "Professional drone with 4K camera and obstacle avoidance",
                             ImageUrl = "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=500",
@@ -111,6 +118,7 @@ namespace DataAccess.Migrations
                         new
                         {
                             Id = 5,
+                            AverageRating = 0m,
                             CategoryId = 9,
                             Description = "High-quality PA speakers for events and presentations",
                             ImageUrl = "https://thumbs.static-thomann.de/thumb/padthumb600x600/pics/bdb/_51/519347/16724814_800.jpg",
@@ -122,6 +130,7 @@ namespace DataAccess.Migrations
                         new
                         {
                             Id = 6,
+                            AverageRating = 0m,
                             CategoryId = 7,
                             Description = "Professional 4K projector with 5000 lumens brightness",
                             ImageUrl = "https://musicmag.com.ua/media/catalog/product/cache/1/image/736x460/62defc7f46f3fbfc8afcd112227d1181/e/p/epson_pro_cinema_4040_front.jpg",

@@ -22,7 +22,7 @@ namespace ElectronicsRentTP.Controllers
         public async Task<IActionResult> Index()
         {
             // LEFT JOIN
-            var model = ctx.Equipments.Include(x => x.Category).ToList();
+            //var model = ctx.Equipments.Include(x => x.Category).ToList();
             var models = await eq.GetAll(null, null, null, null, null, null, null, 1);
 
             return View(models);

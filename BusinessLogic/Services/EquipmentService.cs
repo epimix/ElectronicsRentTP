@@ -52,13 +52,12 @@ namespace BusinessLogic.Services
                 filterEx = filterEx.And(x => x.IsAvailable == IsAvailable.Value);
 
             var items = await repo.GetAllAsync(
-                pageNumber: pageNumber,
+                pageNumber: 1,
                 pageSize: 10,
-                filtering: filterEx,
-                includes: nameof(Equipment.Category),
-                orderBy: q => SortPriceAsc ?? true ? q.OrderBy(x => x.Id) : q.OrderByDescending(x => x.Id)
+                filtering: e => e.IsAvailable,
+                orderBy: q => q.OrderBy(e => e.Name),
+                nameof(Equipment.Category), nameof(Equipment.reviews)
             );
-
             return items.ToList();
         }
 
