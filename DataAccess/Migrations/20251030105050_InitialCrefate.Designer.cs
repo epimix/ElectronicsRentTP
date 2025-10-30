@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(EquipmentRentalDbContext))]
-    partial class EquipmentRentalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251030105050_InitialCrefate")]
+    partial class InitialCrefate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,12 +60,6 @@ namespace DataAccess.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("ReviewCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ReviewSum")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -80,9 +77,7 @@ namespace DataAccess.Migrations
                             IsAvailable = true,
                             Name = "Canon EOS R5 Camera",
                             PricePerHour = 50m,
-                            Quantity = 2,
-                            ReviewCount = 0,
-                            ReviewSum = 0
+                            Quantity = 2
                         },
                         new
                         {
@@ -94,9 +89,7 @@ namespace DataAccess.Migrations
                             IsAvailable = true,
                             Name = "Sony Wireless Microphone",
                             PricePerHour = 15m,
-                            Quantity = 5,
-                            ReviewCount = 0,
-                            ReviewSum = 0
+                            Quantity = 5
                         },
                         new
                         {
@@ -108,9 +101,7 @@ namespace DataAccess.Migrations
                             IsAvailable = true,
                             Name = "MacBook Pro 16",
                             PricePerHour = 30m,
-                            Quantity = 3,
-                            ReviewCount = 0,
-                            ReviewSum = 0
+                            Quantity = 3
                         },
                         new
                         {
@@ -122,9 +113,7 @@ namespace DataAccess.Migrations
                             IsAvailable = true,
                             Name = "DJI Mini 4 Pro Drone",
                             PricePerHour = 40m,
-                            Quantity = 1,
-                            ReviewCount = 0,
-                            ReviewSum = 0
+                            Quantity = 1
                         },
                         new
                         {
@@ -136,9 +125,7 @@ namespace DataAccess.Migrations
                             IsAvailable = true,
                             Name = "Bose Professional Speakers",
                             PricePerHour = 25m,
-                            Quantity = 2,
-                            ReviewCount = 0,
-                            ReviewSum = 0
+                            Quantity = 2
                         },
                         new
                         {
@@ -150,9 +137,7 @@ namespace DataAccess.Migrations
                             IsAvailable = true,
                             Name = "Epson Projector 4K",
                             PricePerHour = 35m,
-                            Quantity = 2,
-                            ReviewCount = 0,
-                            ReviewSum = 0
+                            Quantity = 2
                         });
                 });
 

@@ -24,12 +24,38 @@ namespace BusinessLogic.Services
 
         public async Task DeleteReview(int reviewId)
         {
+            var review = await repo.GetByIdAsync(reviewId);
+            if (review == null) return;
+
+            var eq = await eqRepo.GetByIdAsync(review.EquipmentId);
+            if (eq == null) return;
+
+            eq.ReviewCount--;
+            eq.ReviewSum -= review.Rating;
+            eq.AverageRating = eq.ReviewCount > 0
+                ? (decimal)eq.ReviewSum / eq.ReviewCount
+                : 0;
+
             await repo.DeleteAsync(reviewId);
+
+            await eqRepo.UpdateAsync(eq);
         }
 
         public async Task EditReview(Review review)
         {
-            if (review == null) return;
+            var oldReview = await repo.GetByIdAsync(review.Id);
+            if (oldReview == null) return;
+
+            var eq = await eqRepo.GetByIdAsync(oldReview.EquipmentId);
+            if (eq == null) return;
+
+            if (oldReview.Rating != review.Rating)
+            {
+                eq.ReviewSum = eq.ReviewSum - oldReview.Rating + review.Rating;
+                eq.AverageRating = (decimal)eq.ReviewSum / eq.ReviewCount;
+                await eqRepo.UpdateAsync(eq);
+            }
+
             await repo.UpdateAsync(review);
         }
 
@@ -44,7 +70,8 @@ namespace BusinessLogic.Services
             var eq = eqRepo.GetByIdAsync(equipmentId);
             if (eq == null) return Task.FromResult(new List<Review>());
 
-            return repo.GetAllAsync(r => r.EquipmentId == equipmentId)
+            return repo.GetAllAsync(
+                filtering: r => r.EquipmentId == equipmentId)
                        .ContinueWith(t => t.Result.ToList());
         }
 
@@ -53,24 +80,32 @@ namespace BusinessLogic.Services
             var user = userServices.GetById(userId);
             if (user == null) return Task.FromResult(new List<Review>());
 
-            return repo.GetAllAsync(r => r.UserId == userId)
+            return repo.GetAllAsync(filtering: r => r.UserId == userId)
                        .ContinueWith(t => t.Result.ToList());
         }
 
         public async Task PostReview(string userId, int equipmentId, string reviewText, int rating)
         {
-            var user = userServices.GetById(userId);
-            var equipment = eqRepo.GetByIdAsync(equipmentId);
+            var user = await userServices.GetById(userId);
+            var equipment = await eqRepo.GetByIdAsync(equipmentId);
             if (user == null || equipment == null) return;
 
-            await repo.AddAsync(new Review
+            var review = new Review
             {
                 UserId = userId,
                 EquipmentId = equipmentId,
                 Comment = reviewText,
                 Rating = rating,
                 CreatedAt = DateTime.UtcNow
-            });
+            };
+
+            await repo.AddAsync(review);
+
+            equipment.ReviewCount++;
+            equipment.ReviewSum += rating;
+            equipment.AverageRating = (decimal)equipment.ReviewSum / equipment.ReviewCount;
+
+            await eqRepo.UpdateAsync(equipment);
         }
     }
 }
