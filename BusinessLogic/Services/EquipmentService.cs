@@ -54,8 +54,11 @@ namespace BusinessLogic.Services
             var items = await repo.GetAllAsync(
                 pageNumber: 1,
                 pageSize: 10,
-                filtering: e => e.IsAvailable,
-                orderBy: q => q.OrderBy(e => e.Name),
+                filtering: filterEx,
+                orderBy: q =>
+                    SortPriceAsc == true ? q.OrderBy(e => e.PricePerHour) :
+                    SortPriceAsc == false ? q.OrderByDescending(e => e.PricePerHour) :
+                    q.OrderBy(e => e.Id),
                 nameof(Equipment.Category), nameof(Equipment.reviews)
             );
             return items.ToList();
