@@ -1,4 +1,4 @@
-@model List<Equipment>
+@model List<BusinessLogic.Dtos.EquipmentDTO>
 
 <h1>Equipment List</h1>
 
@@ -28,7 +28,7 @@
                 <td>
                     <a asp-action="Details" asp-route-id="@i.Id">@i.Name</a>
                 </td>
-                <td>@i.Category?.Name</td>
+                <td>@i.CategoryName</td>
                 <td>$@i.PricePerHour</td>
                 <td>@i.Quantity</td>
                 <td>

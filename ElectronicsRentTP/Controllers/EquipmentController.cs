@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DataAccess.Data;
 using DataAccess.Data.Entities;
+using BusinessLogic.Dtos;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ElectronicsRentTP.Extensions;
 using ElectronicsRentTP.Models;
 using BusinessLogic.Interfaces;
+using AutoMapper;
 
 namespace ElectronicsRentTP.Controllers
 {
@@ -13,10 +15,12 @@ namespace ElectronicsRentTP.Controllers
     {
         private readonly EquipmentRentalDbContext ctx;
         private readonly IEquipmentService eq;
-        public EquipmentController(EquipmentRentalDbContext ctx, IEquipmentService eq)
+        private readonly IMapper mapper;
+        public EquipmentController(EquipmentRentalDbContext ctx, IEquipmentService eq, IMapper mapper)
         {
             this.ctx = ctx;
             this.eq = eq;
+            this.mapper = mapper;
         }
 
         public async Task<IActionResult> Index()
@@ -34,7 +38,7 @@ namespace ElectronicsRentTP.Controllers
             var equipment = await eq.GetById(id);
             if (equipment == null) return NotFound();
 
-            return View(equipment);
+            return View(mapper.Map<EquipmentDTO>(equipment));
         }
 
         [HttpGet]
@@ -46,7 +50,7 @@ namespace ElectronicsRentTP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Equipment equipment)
+        public async Task<IActionResult> Create(EquipmentDTO equipment)
         {
             if (!ModelState.IsValid)
             {
@@ -54,7 +58,9 @@ namespace ElectronicsRentTP.Controllers
                 return View(equipment);
             }
 
-            await eq.AddEquipment(equipment);
+            Equipment equ = mapper.Map<Equipment>(equipment);
+
+            await eq.AddEquipment(equ);
             TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment created successfully!"));
 
             return RedirectToAction("Index");
@@ -67,12 +73,12 @@ namespace ElectronicsRentTP.Controllers
             if (equipment == null) return NotFound();
 
             SetCategoriesToViewBag();
-            return View(equipment);
+            return View(mapper.Map<EquipmentDTO>(equipment));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Equipment equipment)
+        public async Task<IActionResult> Edit(EquipmentDTO equipment)
         {
             if (!ModelState.IsValid)
             {
@@ -80,7 +86,7 @@ namespace ElectronicsRentTP.Controllers
                 return View(equipment);
             }
 
-            await eq.UpdateEquipment(equipment);
+            await eq.UpdateEquipment(mapper.Map<Equipment>(equipment));
             TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment updated successfully!"));
 
             return RedirectToAction("Index");

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BusinessLogic.Dtos;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,7 +10,7 @@ namespace BusinessLogic.Interfaces
 {
     public interface IEquipmentService
     {
-        Task<IList<Equipment>> GetAll(
+        Task<IList<EquipmentDTO>> GetAll(
             int? filterCategoryId,
             string? ByName,
             string? ByDescription,
