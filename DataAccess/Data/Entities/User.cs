@@ -9,6 +9,8 @@ namespace DataAccess.Data.Entities
         public DateTime? Birthdate { get; set; }
         public decimal Balance { get; set; } = 0;
 
+        public List<Equipment> FavoriteEquipment { get; set; } = new List<Equipment>();
+
         public List<Rental> Rentals { get; set; } = new List<Rental>();
 
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
