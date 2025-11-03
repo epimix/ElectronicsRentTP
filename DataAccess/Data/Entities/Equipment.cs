@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataAccess.Data.Enum;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace DataAccess.Data.Entities
         public decimal AverageRating { get; set; } = 0;
 
         public bool IsAvailable { get; set; }
-
+        public EquipmentStatus Status { get; set; } = EquipmentStatus.Free;
         [Required]
         [Range(0, int.MaxValue, ErrorMessage = "Quantity must be 0 or greater")]
         public int Quantity { get; set; }
