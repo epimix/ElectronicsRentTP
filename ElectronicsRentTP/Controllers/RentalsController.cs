@@ -82,7 +82,13 @@ namespace ElectronicsRentTP.Controllers
                 TempData.Set(WebConstants.ToastMessage, new ToastModel("can't find an equipment", ToastType.danger));
                 return RedirectToAction("Index", "Equipment");
             }
-
+            if (equipment.Status == EquipmentStatus.Rented || equipment.Status == EquipmentStatus.Reserved)
+            {
+                ModelState.AddModelError(string.Empty, "This equipment is currently not available.");
+                model.EquipmentName = equipment.Name;
+                model.PricePerHour = equipment.PricePerHour;
+                return View(model);
+            }
             var overlappingRentalsCount = await _ctx.Rentals
                 .Where(r => r.EquipmentId == equipment.Id
                             && r.Status != RentalStatus.Cancelled
