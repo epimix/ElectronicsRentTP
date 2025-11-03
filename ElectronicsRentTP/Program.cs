@@ -36,6 +36,7 @@ builder.Services.AddScoped<IFavService, FavoriteService>();
 builder.Services.AddScoped<IUserServices, UserServices>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IFavoriteEquipmentDBService, FavoriteEquipmentDBService>();
 
 // -------------------- JWT OPTIONS --------------------
 
