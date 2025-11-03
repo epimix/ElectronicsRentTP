@@ -35,7 +35,7 @@ namespace BusinessLogic.Services
             if (pageNumber < 1)
                 pageNumber = 1;
 
-            var filterEx = PredicateBuilder.New<EquipmentDTO>(true);
+            var filterEx = PredicateBuilder.New<Equipment>(true);
 
             if (filterCategoryId != null)
                 filterEx = filterEx.And(x => x.CategoryId == filterCategoryId);
