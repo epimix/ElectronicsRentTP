@@ -1,4 +1,5 @@
 ﻿using BusinessLogic;
+using BusinessLogic.Configure;
 using BusinessLogic.Interfaces;
 using BusinessLogic.Services;
 using DataAccess.Data;
@@ -7,52 +8,61 @@ using DataAccess.Repositories;
 using ElectronicsRentTP.Extensions;
 using ElectronicsRentTP.Interfaces;
 using ElectronicsRentTP.Services;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
-using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// -------------------- DATABASE --------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new Exception("No connection string found.");
 
 builder.Services.AddDbContext<EquipmentRentalDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+// -------------------- IDENTITY --------------------
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<EquipmentRentalDbContext>()
     .AddDefaultTokenProviders();
 
+// -------------------- REPOSITORIES & SERVICES --------------------
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 builder.Services.AddScoped<IFavService, FavoriteService>();
-builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IUserServices, UserServices>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 
+// -------------------- JWT OPTIONS --------------------
 
-builder.Services.AddSingleton(_ => builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()!);
-var jwtOpts = builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()!;
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection(nameof(JwtOptions)));
+builder.Services.AddScoped<IJwtService, JwtService>();
 
-builder.Services.AddJWTSettings(jwtOpts);
+// -------------------- AUTOMAPPER --------------------
+// Для AutoMapper 13.0.1
+/* (✌ﾟ∀ﾟ)☞ */builder.Services.AddAutoMapper(typeof(MapperProfile)); /*凸(⊙▂⊙✖ )*/ /*i love git hub copilot*/ /*he ended this phrase, it wasn't me (´⊙ω⊙`)*/
 
+// -------------------- CONTROLLERS --------------------
 builder.Services.AddControllersWithViews();
 
+// -------------------- SESSION --------------------
 builder.Services.AddDistributedMemoryCache();
-
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(10);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-builder.Services.AddSession();
 
+// -------------------- BUILD APP --------------------
 var app = builder.Build();
 
+// -------------------- MIDDLEWARE --------------------
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -61,15 +71,19 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseMiddleware<ElectronicsRentTP.Middleware.AuthTokenMiddleware>();
 
 app.UseRouting();
 
-app.UseAuthentication(); 
-app.UseAuthorization();
 
+app.UseAuthentication();
+
+
+app.UseMiddleware<ElectronicsRentTP.Middleware.AuthTokenMiddleware>();
+
+app.UseAuthorization();
 app.UseSession();
 
+// -------------------- ENDPOINTS --------------------
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

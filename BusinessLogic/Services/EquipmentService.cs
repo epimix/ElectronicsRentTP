@@ -1,24 +1,28 @@
 ﻿using BusinessLogic.Interfaces;
 using DataAccess.Data.Entities;
 using DataAccess.Repositories;
+using BusinessLogic.Dtos;
 using LinqKit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 
 namespace BusinessLogic.Services
 {
     public class EquipmentService : IEquipmentService
     {
         private readonly IRepository<Equipment> repo;
+        private readonly IMapper mapper;
 
-        public EquipmentService(IRepository<Equipment> repo)
+        public EquipmentService(IRepository<Equipment> repo,IMapper mapper)
         {
             this.repo = repo;
+            this.mapper = mapper;
         }
 
-        public async Task<IList<Equipment>> GetAll(
+        public async Task<IList<EquipmentDTO>> GetAll(
             int? filterCategoryId,
             string? ByName,
             string? ByDescription,
@@ -31,7 +35,7 @@ namespace BusinessLogic.Services
             if (pageNumber < 1)
                 pageNumber = 1;
 
-            var filterEx = PredicateBuilder.New<Equipment>(true);
+            var filterEx = PredicateBuilder.New<EquipmentDTO>(true);
 
             if (filterCategoryId != null)
                 filterEx = filterEx.And(x => x.CategoryId == filterCategoryId);
@@ -61,7 +65,7 @@ namespace BusinessLogic.Services
                     q.OrderBy(e => e.Id),
                 nameof(Equipment.Category), nameof(Equipment.reviews)
             );
-            return items.ToList();
+            return mapper.Map<IList<EquipmentDTO>>(items);
         }
 
 

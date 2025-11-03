@@ -2,6 +2,7 @@
 using DataAccess.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -23,11 +24,11 @@ namespace BusinessLogic.Services
 
         public JwtService(IConfiguration configuration,
             UserManager<User> userManager,
-            JwtOptions jwtOptions)
+            IOptions<JwtOptions> jwtOptions)
         {
             this.configuration = configuration;
             this.userManager = userManager;
-            this.jwtOptions = jwtOptions;
+            this.jwtOptions = jwtOptions.Value;
         }
 
         public RefreshToken GenerateRefreshToken(string ipAddress)
@@ -53,6 +54,7 @@ namespace BusinessLogic.Services
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(jwtOptions.AccessTokenExpirationMinutes),
                 signingCredentials: credentials);
+            
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

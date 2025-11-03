@@ -63,6 +63,8 @@ namespace ElectronicsRentTP.Middleware
 
                 try
                 {
+                    var jwt = handler.ReadJwtToken(token);
+                    Console.WriteLine(jwt.ValidTo);
 
                     principal = handler.ValidateToken(token, parameters, out _);
                     userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
