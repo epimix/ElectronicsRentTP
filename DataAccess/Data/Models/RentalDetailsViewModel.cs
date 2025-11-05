@@ -1,4 +1,5 @@
 ﻿using DataAccess.Data.Enum;
+using System.ComponentModel.DataAnnotations;
 
 namespace ElectronicsRentTP.Models
 {
@@ -13,5 +14,7 @@ namespace ElectronicsRentTP.Models
         public decimal TotalPrice { get; set; }
         public string? UserEmail { get; set; }
         public string? EquipmentImageUrl { get; set; }
+        public string? Description { get; set; }
+        public PaymentType PaymentType { get; set; }
     }
 }
