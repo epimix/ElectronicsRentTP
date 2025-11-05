@@ -13,7 +13,7 @@
 
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                    <form asp-action="Register" method="post" novalidate>
+                    <form asp-action="Register" method="post" enctype="multipart/form-data" novalidate>
                         <div class="mb-3">
                             <label asp-for="FullName" class="form-label">Full name</label>
                             <div class="input-group">
@@ -54,10 +54,28 @@
                             <label asp-for="ConfirmPassword" class="form-label">Confirm password</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
-                                <input asp-for="ConfirmPassword" type="password" class="form-control"
-                                    placeholder="••••••••" />
+                                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="••••••••" />
                             </div>
                             <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Фото профілю -->
+                        <div class="border-top pt-3 mt-3">
+                            <p class="text-muted small mb-2 text-center">Profile photo (one of the options):</p>
+
+                            <div class="mb-3">
+                                <label class="form-label">Upload file</label>
+                                <input type="file" name="profileImageFile" accept="image/*"
+                                       class="form-control rounded-pill" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Or paste image link</label>
+                                <input type="url" name="profileImageUrl" placeholder="https://example.com/avatar.jpg"
+                                       class="form-control rounded-pill" />
+                            </div>
                         </div>
 
                         <div class="d-grid gap-2 mt-4">
@@ -76,6 +94,36 @@
     </div>
 </div>
 
+
 @section Scripts {
+    <script>
+        const fileInput = document.querySelector('input[name="profileImageFile"]');
+        const urlInput = document.querySelector('input[name="profileImageUrl"]');
+        const preview = document.getElementById('previewImage');
+        const previewContainer = document.getElementById('previewContainer');
+
+        function showPreview(src) {
+            preview.src = src;
+            previewContainer.classList.remove('hidden');
+        }
+
+        fileInput?.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => showPreview(e.target.result);
+                reader.readAsDataURL(file);
+            }
+        });
+
+        urlInput?.addEventListener('input', e => {
+            const url = e.target.value.trim();
+            if (url.startsWith('http')) {
+                showPreview(url);
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+        });
+    </script>
     <partial name="_ValidationScriptsPartial" />
 }
