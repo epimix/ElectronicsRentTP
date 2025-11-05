@@ -69,6 +69,8 @@ namespace BusinessLogic.Services
                 EquipmentId = equipment.Id,
                 UserId = userId,
                 StartDate = model.StartDate,
+                Description = model.Description,
+                PaymentType = model.PaymentType,
                 EndDate = model.EndDate,
                 Status = RentalStatus.Pending,
                 TotalPrice = totalPrice
@@ -116,6 +118,8 @@ namespace BusinessLogic.Services
                 Status = rental.Status,
                 TotalPrice = rental.TotalPrice,
                 UserEmail = rental.User?.Email,
+                Description = rental.Description,
+                PaymentType = rental.PaymentType,
                 EquipmentImageUrl = rental.Equipment?.ImageUrl
             };
         }

@@ -21,6 +21,10 @@ namespace DataAccess.Data.Entities
         public DateTime EndDate { get; set; }
 
         public RentalStatus Status { get; set; }
+
+        public string? Description { get; set; }
+
+        public PaymentType PaymentType { get; set; }
         public decimal TotalPrice { get; set; }
     }
 }

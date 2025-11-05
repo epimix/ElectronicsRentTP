@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(EquipmentRentalDbContext))]
-    partial class EquipmentRentalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251103175825_updatereer")]
+    partial class updatereer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,9 +66,6 @@ namespace DataAccess.Migrations
                     b.Property<int>("ReviewSum")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
@@ -90,8 +90,7 @@ namespace DataAccess.Migrations
                             PricePerHour = 50m,
                             Quantity = 2,
                             ReviewCount = 0,
-                            ReviewSum = 0,
-                            Status = 0
+                            ReviewSum = 0
                         },
                         new
                         {
@@ -105,8 +104,7 @@ namespace DataAccess.Migrations
                             PricePerHour = 15m,
                             Quantity = 5,
                             ReviewCount = 0,
-                            ReviewSum = 0,
-                            Status = 0
+                            ReviewSum = 0
                         },
                         new
                         {
@@ -120,8 +118,7 @@ namespace DataAccess.Migrations
                             PricePerHour = 30m,
                             Quantity = 3,
                             ReviewCount = 0,
-                            ReviewSum = 0,
-                            Status = 0
+                            ReviewSum = 0
                         },
                         new
                         {
@@ -135,8 +132,7 @@ namespace DataAccess.Migrations
                             PricePerHour = 40m,
                             Quantity = 1,
                             ReviewCount = 0,
-                            ReviewSum = 0,
-                            Status = 0
+                            ReviewSum = 0
                         },
                         new
                         {
@@ -150,8 +146,7 @@ namespace DataAccess.Migrations
                             PricePerHour = 25m,
                             Quantity = 2,
                             ReviewCount = 0,
-                            ReviewSum = 0,
-                            Status = 0
+                            ReviewSum = 0
                         },
                         new
                         {
@@ -165,8 +160,7 @@ namespace DataAccess.Migrations
                             PricePerHour = 35m,
                             Quantity = 2,
                             ReviewCount = 0,
-                            ReviewSum = 0,
-                            Status = 0
+                            ReviewSum = 0
                         });
                 });
 
@@ -314,16 +308,10 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("EquipmentId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PaymentType")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("StartDate")
