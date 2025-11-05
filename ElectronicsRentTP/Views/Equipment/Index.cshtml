@@ -1,63 +1,321 @@
-@model List<BusinessLogic.Dtos.EquipmentDTO>
+﻿@model List<BusinessLogic.Dtos.EquipmentDTO>
 
-<h1>Equipment List</h1>
+<style>
+    .equipment-admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
 
-<a asp-action="Create" class="btn btn-primary my-1">Add New Equipment</a>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Photo</th>
-            <th scope="col">Name</th>
-            <th scope="col">Category</th>
-            <th scope="col">Price/Hour</th>
-            <th scope="col">Quantity</th>
-            <th scope="col">Available</th>
-            <th scope="col">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var i in Model)
-        {
-            <tr class="align-middle">
-                <th scope="row">@i.Id</th>
-                <td class="grid-item-main-image">
-                    <img src="@(i.ImageUrl ?? "https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg")" alt="@i.Name" height="50" />
-                </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@i.Id">@i.Name</a>
-                </td>
-                <td>@i.CategoryName</td>
-                <td>$@i.PricePerHour</td>
-                <td>@i.Quantity</td>
-                <td>
-                    @if (i.IsAvailable)
-                    {
-                        <span class="badge bg-success">Available</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-warning">Unavailable</span>
-                    }
-                </td>
-                <td>
-                    <div class="btn-group" role="group">
-                        <a asp-action="Edit" asp-route-id="@i.Id" class="btn btn-outline-warning">Edit</a>
-                        <a data-bs-id="@i.Id" data-bs-title="@i.Name" data-bs-toggle="modal" data-bs-target="#deleteConfirmDialog" class="btn btn-outline-danger">Delete</a>
-                    </div>
-                </td>
-            </tr>
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-add-equipment {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+        .btn-add-equipment:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            color: white;
         }
-    </tbody>
-</table>
 
-@if (Model.Count == 0)
-{
-    <div class="text-center">
-        <img width="500" src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-concept-illustration-svg-png-download-2902554.png" alt="Empty" />
+    .table-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .modern-table {
+        width: 100%;
+        margin: 0;
+    }
+
+        .modern-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+            .modern-table thead th {
+                color: white;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.875rem;
+                letter-spacing: 0.5px;
+                padding: 1.25rem 1rem;
+                border: none;
+            }
+
+        .modern-table tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+            .modern-table tbody tr:hover {
+                background: #f7fafc;
+                transform: scale(1.01);
+            }
+
+            .modern-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+        .modern-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            color: #2d3748;
+        }
+
+    .equipment-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .equipment-image:hover {
+            transform: scale(1.5);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            position: relative;
+        }
+
+    .equipment-name {
+        color: #667eea;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+        .equipment-name:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+    .price-tag {
+        color: #667eea;
+        font-weight: 700;
+        font-size: 1.05rem;
+    }
+
+    .badge-available {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 0.375rem 0.875rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-block;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-unavailable {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 0.375rem 0.875rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-block;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-edit {
+        background: white;
+        color: #f59e0b;
+        border: 2px solid #f59e0b;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.875rem;
+    }
+
+        .btn-edit:hover {
+            background: #f59e0b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+    .btn-delete {
+        background: white;
+        color: #ef4444;
+        border: 2px solid #ef4444;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-size: 0.875rem;
+    }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+        .empty-state img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+        }
+
+    .empty-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .modern-table {
+            min-width: 800px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-add-equipment {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="equipment-admin-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <span>🛠️</span>
+            <span>Equipment Management</span>
+        </h1>
+        <a asp-action="Create" class="btn-add-equipment">
+            <i class="bi bi-plus-circle"></i>
+            <span>Add New Equipment</span>
+        </a>
     </div>
-}
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-container">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Photo</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Price/Hour</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><strong>@item.Id</strong></td>
+                            <td>
+                                <img src="@(item.ImageUrl ?? "https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg")"
+                                     alt="@item.Name"
+                                     class="equipment-image" />
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="equipment-name">@item.Name</a>
+                            </td>
+                            <td>@item.CategoryName</td>
+                            <td><span class="price-tag">$@item.PricePerHour</span></td>
+                            <td><strong>@item.Quantity</strong></td>
+                            <td>
+                                @if (item.IsAvailable)
+                                {
+                                    <span class="badge-available">✓ Available</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-unavailable">⚠ Unavailable</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn-edit">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                    <a data-bs-id="@item.Id"
+                                       data-bs-title="@item.Name"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#deleteConfirmDialog"
+                                       class="btn-delete">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <img width="400" src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-concept-illustration-svg-png-download-2902554.png" alt="Empty" />
+            <h3 class="empty-title">No Equipment Found</h3>
+            <p style="color: #718096; font-size: 1.1rem;">Start by adding your first equipment item!</p>
+        </div>
+    }
+</div>
 
 <partial name="_ConfirmModalDialogPartial" model=@(new ConfirmDialogModel() {
          DialogId = "deleteConfirmDialog",
@@ -71,4 +329,3 @@
         configConfirmModal('deleteConfirmDialog', '/Equipment/Delete/');
     </script>
 }
-

@@ -1,34 +1,174 @@
-﻿
-@model CreateRentalViewModel
+﻿@model CreateRentalViewModel
 @{
-    ViewData["Title"] = "create booking";
-
+    ViewData["Title"] = "Book Equipment";
 }
-<h2>@ViewData["Title"]</h2>
-<div>
-    <h4>@Model.EquipmentName</h4>
-    <p>Ціна за годину: @Model.PricePerHour</p>
+
+<style>
+    .booking-container {
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
+    .equipment-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .equipment-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .price-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .booking-form {
+        background: white;
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 0.875rem 2.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+    .btn-secondary {
+        background: #f7fafc;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            color: #2d3748;
+        }
+
+    .text-danger {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .icon-calendar {
+        color: #667eea;
+        margin-right: 0.5rem;
+    }
+</style>
+
+<div class="booking-container">
+    <div class="equipment-card">
+        <div class="equipment-title">
+            📱 @Model.EquipmentName
+        </div>
+        <div class="price-badge">
+            💰 @Model.PricePerHour.ToString("0.00") UAH / hour
+        </div>
+    </div>
+
+    <div class="booking-form">
+        <h4 style="color: #2d3748; font-weight: 700; margin-bottom: 1.5rem;">
+            Select Booking Period
+        </h4>
+
+        <form asp-action="Create" method="post">
+            <input type="hidden" asp-for="EquipmentId" />
+            <input type="hidden" asp-for="EquipmentName" />
+            <input type="hidden" asp-for="PricePerHour" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="StartDate" class="form-label">
+                            🗓️ Start Date & Time
+                        </label>
+                        <input asp-for="StartDate"
+                               class="form-control"
+                               type="datetime-local"
+                               value="@Model.StartDate.ToString("yyyy-MM-ddTHH:mm")" />
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="EndDate" class="form-label">
+                            🏁 End Date & Time
+                        </label>
+                        <input asp-for="EndDate"
+                               class="form-control"
+                               type="datetime-local"
+                               value="@Model.EndDate.ToString("yyyy-MM-ddTHH:mm")" />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-3 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    ✅ Confirm Booking
+                </button>
+                <a asp-controller="Equipment" asp-action="Index" class="btn btn-secondary">
+                    ← Back to Equipment
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
-<form asp-action="Create" method="post">
-    <input type="hidden" asp-for="EquipmentId" />
 
-
-    <div class="form-group">
-        <label asp-for="StartDate">start date time</label>
-        <input asp-for="StartDate" class="form-control" type="datetime-local" value="@Model.StartDate.ToString("yyyy-MM-ddTHH:mm")" />
-        <span asp-validation-for="StartDate" class="text-danger"></span>
-    </div>
-
-
-    <div class="form-group">
-        <label asp-for="EndDate">end date time</label>
-        <input asp-for="EndDate" class="form-control" type="datetime-local" value="@Model.EndDate.ToString("yyyy-MM-ddTHH:mm")" />
-        <span asp-validation-for="EndDate" class="text-danger"></span>
-    </div>
-
-
-    <div class="form-group mt-2">
-        <button type="submit" class="btn btn-primary">book</button>
-        <a asp-controller="Equipment" asp-action="Index" class="btn btn-secondary">back</a>
-    </div>
-</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
