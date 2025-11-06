@@ -17,14 +17,15 @@ namespace ElectronicsRentTP.Controllers
         }
         
         // GET: Cart
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
             var existingIds = HttpContext.Session.Get<List<int>>("FavItems") ?? new List<int>();
 
-            var items = ctx.Equipments
+            var items = await ctx.Equipments
                 .Include(x => x.Category)
+                .Include(x => x.reviews)
                 .Where(x => existingIds.Contains(x.Id))
-                .ToList();
+                .ToListAsync();
 
             return View(items);
         }
@@ -52,7 +53,7 @@ namespace ElectronicsRentTP.Controllers
 
             return RedirectToAction("Index");
         }
-        
+
         public ActionResult DeleteAll()
         {
             var existingIds = HttpContext.Session.Get<List<int>>("FavItems");

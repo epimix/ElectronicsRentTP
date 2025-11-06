@@ -22,7 +22,9 @@ namespace DataAccess.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            modelBuilder.Entity<Equipment>()
+                .Property(e => e.AverageRating)
+                .HasColumnType("decimal(18,2)");
             modelBuilder.Entity<Rental>()
                 .HasOne(r => r.User)
                 .WithMany(u => u.Rentals)

@@ -1,10 +1,10 @@
-@model Equipment
+@model BusinessLogic.Dtos.EquipmentDTO
 
 <div class="card h-100">
     <img src="@Model.ImageUrl" class="card-img-top" alt="Equipment" onerror="this.src='https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg'">
     <div class="card-body">
         <h5 class="card-title">@Model.Name</h5>
-        <p class="card-text">@Model.Category?.Name - $@Model.PricePerHour/hour</p>
+        <p class="card-text">@Model.CategoryName - $@Model.PricePerHour/hour</p>
         <p class="card-text small">@Model.Description</p>
     </div>
     <div class="card-footer">

@@ -4,93 +4,322 @@
     ViewData["Title"] = "Profile";
 }
 
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 70vh;">
-    <div class="row w-100 justify-content-center">
-        <div class="col-12 col-sm-10 col-md-8 col-lg-6">
-            @if (!Model.IsAuthenticated)
-            {
-                <div class="card shadow-sm border-0 text-center">
-                    <div class="card-body p-4 p-md-5">
-                        <div class="display-6 mb-3 text-danger"><i class="bi bi-person-x"></i></div>
-                        <h4 class="mb-2">You're not signed in</h4>
-                        <p class="text-muted mb-4">Please sign in to view your profile and bookings.</p>
-                        <div class="d-flex justify-content-center gap-2">
-                            <a class="btn btn-primary" asp-controller="Account" asp-action="Login">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Sign in
-                            </a>
-                            <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Register">
-                                <i class="bi bi-person-plus me-1"></i> Sign up
-                            </a>
-                        </div>
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+        .profile-card:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            border-color: #667eea;
+        }
+
+    .not-authenticated-card {
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+
+    .auth-icon {
+        font-size: 4rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .not-authenticated-card h4 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.75rem;
+    }
+
+    .not-authenticated-card .text-muted {
+        color: #718096 !important;
+        font-size: 1.05rem;
+    }
+
+    .btn-group-auth {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            color: white;
+        }
+
+    .btn-outline-modern {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-modern:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        color: white;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 3px solid white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-header h4 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .profile-email {
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .profile-body {
+        padding: 2rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        background: #f7fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: all 0.3s ease;
+    }
+
+        .info-card:hover {
+            border-color: #667eea;
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+    .info-label {
+        font-size: 0.75rem;
+        color: #718096;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        color: #2d3748;
+        font-weight: 600;
+    }
+
+    .role-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.375rem 0.875rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-block;
+        margin: 0.25rem;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .profile-actions {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding-top: 2rem;
+        border-top: 2px solid #f7fafc;
+    }
+
+    .btn-bookings {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 0.75rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-bookings:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(4px);
+        }
+
+    .btn-logout {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+    @@media (max-width: 768px) {
+        .profile-header {
+            padding: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 64px;
+            height: 64px;
+            font-size: 2rem;
+        }
+
+        .profile-header h4 {
+            font-size: 1.5rem;
+        }
+
+        .profile-body {
+            padding: 1.5rem;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="profile-container">
+    @if (!Model.IsAuthenticated)
+    {
+                    </a>
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+                    </div>
+                    <div>
                     </div>
                 </div>
-            }
-            else
-            {
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-4 p-md-5">
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            <div class="rounded-circle bg-primary bg-gradient text-white d-flex align-items-center justify-content-center" style="width:64px;height:64px;">
-                                <i class="bi bi-person-fill" style="font-size: 1.75rem;"></i>
-                            </div>
-                            <div>
-                                <h4 class="mb-1">@Model.FullName ?? "User"</h4>
-                                <div class="text-muted">@Model.Email</div>
-                            </div>
-                        </div>
-
-                        <div class="row g-3 mb-3">
-                            <div class="col-12 col-md-6">
-                                <div class="border rounded p-3">
-                                    <div class="text-muted small">Full name</div>
-                                    <div class="fw-semibold">@Model.FullName</div>
-                                </div>
-                            </div>
                             <div class="col-12 col-md-6">
                                 <div class="border rounded p-3">
                                     <div class="text-muted small">Email</div>
                                     <div class="fw-semibold">@Model.Email</div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <div class="border rounded p-3">
-                                    <div class="text-muted small">Date of birth</div>
-                                    <div class="fw-semibold">@(Model.Birthdate?.ToString("yyyy-MM-dd") ?? "—")</div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <div class="border rounded p-3">
-                                    <div class="text-muted small">Roles</div>
-                                    <div>
-                                        @if (Model.Roles != null && Model.Roles.Count > 0)
-                                        {
-                                            foreach (var role in Model.Roles)
-                                            {
-                                                <span class="badge bg-secondary me-1">@role</span>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">No roles</span>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            </div>
 
-                        <div class="d-flex justify-content-between flex-wrap gap-2">
-                            <a class="btn btn-outline-primary" asp-controller="Rentals" asp-action="MyBookings">
-                                <i class="bi bi-journal-text me-1"></i> My bookings
-                            </a>
-                            <form asp-controller="Account" asp-action="Logout" method="post">
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="bi bi-box-arrow-right me-1"></i> Sign out
-                                </button>
-                            </form>
+            <div class="profile-body">
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-label">👤 Full Name</div>
+                        <div class="info-value">@(Model.FullName ?? "—")</div>
+                    </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">🎂 Date of Birth</div>
+                        <div class="info-value">@(Model.Birthdate?.ToString("MMM dd, yyyy") ?? "—")</div>
+                    </div>
+                            @if (Model.Roles != null && Model.Roles.Count > 0)
+                            {
+                                foreach (var role in Model.Roles)
+                                {
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">No roles</span>
+                            }
                         </div>
                     </div>
                 </div>
-            }
+                        </div>
+
+                    </a>
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
+    }
+</div>
     </div>
 </div>

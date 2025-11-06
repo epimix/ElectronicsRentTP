@@ -1,24 +1,28 @@
 ﻿using BusinessLogic.Interfaces;
 using DataAccess.Data.Entities;
 using DataAccess.Repositories;
+using BusinessLogic.Dtos;
 using LinqKit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 
 namespace BusinessLogic.Services
 {
     public class EquipmentService : IEquipmentService
     {
         private readonly IRepository<Equipment> repo;
+        private readonly IMapper mapper;
 
-        public EquipmentService(IRepository<Equipment> repo)
+        public EquipmentService(IRepository<Equipment> repo,IMapper mapper)
         {
             this.repo = repo;
+            this.mapper = mapper;
         }
 
-        public async Task<IList<Equipment>> GetAll(
+        public async Task<IList<EquipmentDTO>> GetAll(
             int? filterCategoryId,
             string? ByName,
             string? ByDescription,
@@ -52,14 +56,16 @@ namespace BusinessLogic.Services
                 filterEx = filterEx.And(x => x.IsAvailable == IsAvailable.Value);
 
             var items = await repo.GetAllAsync(
-                pageNumber: pageNumber,
+                pageNumber: 1,
                 pageSize: 10,
                 filtering: filterEx,
-                includes: nameof(Equipment.Category),
-                orderBy: q => SortPriceAsc ?? true ? q.OrderBy(x => x.Id) : q.OrderByDescending(x => x.Id)
+                orderBy: q =>
+                    SortPriceAsc == true ? q.OrderBy(e => e.PricePerHour) :
+                    SortPriceAsc == false ? q.OrderByDescending(e => e.PricePerHour) :
+                    q.OrderBy(e => e.Id),
+                nameof(Equipment.Category), nameof(Equipment.reviews)
             );
-
-            return items.ToList();
+            return mapper.Map<IList<EquipmentDTO>>(items);
         }
 
 

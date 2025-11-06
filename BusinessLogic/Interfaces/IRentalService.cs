@@ -1,0 +1,23 @@
+﻿using DataAccess.Data.Entities;
+using ElectronicsRentTP.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BusinessLogic.Interfaces
+{
+    public interface IRentalService
+    {
+        Task<CreateRentalViewModel?> InitializeRentalAsync(int equipmentId);
+
+        Task<(bool Success, string ErrorMessage, Rental? Rental)> CreateRentalAsync(CreateRentalViewModel model, string userId);
+        Task<(string Name, decimal PricePerHour)> GetEquipmentDetailsAsync(int equipmentId);
+
+        Task<List<RentalListItemViewModel>> GetUserRentalsAsync(string userId, int? page = 1, int? pageSize = 10);
+        Task<RentalDetailsViewModel?> GetRentalDetailsAsync(int id, string currentUserId);
+        Task<(bool Success, string ErrorMessage)> UpdateRentalAsync(int id, string currentUserId, Action<Rental> updateAction);
+        Task<(bool Success, string ErrorMessage)> DeleteRentalAsync(int id, string currentUserId);
+    }
+}

@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,87 +11,296 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ElectronicsRentTP.styles.css" asp-append-version="true" />
+
+    <style type="text/css">
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-color: #667eea;
+            --primary-dark: #764ba2;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --bg-light: #f7fafc;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Modern Navbar */
+        .navbar-gradient {
+            background: var(--primary-gradient) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white !important;
+            transition: all 0.3s ease;
+        }
+
+            .navbar-brand:hover {
+                transform: scale(1.05);
+                text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            }
+
+            .navbar-brand i {
+                font-size: 1.75rem;
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            padding: 0.625rem 1rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+            .nav-link:hover {
+                color: white !important;
+                background: rgba(255, 255, 255, 0.15);
+                transform: translateY(-2px);
+            }
+
+            .nav-link i {
+                font-size: 1.1rem;
+            }
+
+            .nav-link .badge {
+                animation: pulse 2s infinite;
+                box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+            }
+
+        @@keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .btn-outline-light {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white !important;
+            font-weight: 600;
+            padding: 0.5rem 1.25rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+            .btn-outline-light:hover {
+                background: white;
+                color: var(--primary-color) !important;
+                border-color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+            }
+
+        /* Main Content Area */
+        main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+
+        /* Modern Footer */
+        .footer {
+            background: white;
+            border-top: 3px solid transparent;
+            border-image: var(--primary-gradient) 1;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem 0;
+            margin-top: auto;
+        }
+
+            .footer span {
+                color: var(--text-muted);
+                font-weight: 500;
+            }
+
+            .footer .link-secondary {
+                color: var(--primary-color) !important;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                position: relative;
+            }
+
+                .footer .link-secondary:after {
+                    content: '';
+                    position: absolute;
+                    bottom: -2px;
+                    left: 0;
+                    width: 0;
+                    height: 2px;
+                    background: var(--primary-gradient);
+                    transition: width 0.3s ease;
+                }
+
+                .footer .link-secondary:hover:after {
+                    width: 100%;
+                }
+
+                .footer .link-secondary:hover {
+                    color: var(--primary-dark) !important;
+                }
+
+        /* Navbar Toggler */
+        .navbar-toggler {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+        }
+
+            .navbar-toggler:focus {
+                box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+            }
+
+        .navbar-toggler-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 991.98px) {
+            .navbar-collapse {
+                margin-top: 1rem;
+                padding: 1rem;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                backdrop-filter: blur(10px);
+            }
+
+            .nav-link {
+                margin: 0.25rem 0;
+            }
+
+            .navbar-nav.ms-auto {
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        /* Smooth transitions */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Container styling */
+        .container-xl {
+            max-width: 1320px;
+        }
+
+        /* Active nav link indicator */
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+        }
+
+        /* Hover effect for navbar items */
+        .navbar-nav .nav-item {
+            position: relative;
+        }
+
+        /* Badge styling improvement */
+        .badge.rounded-pill {
+            padding: 0.35em 0.65em;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        /* Focus states for accessibility */
+        .nav-link:focus,
+        .btn-outline-light:focus {
+            outline: 2px solid rgba(255, 255, 255, 0.5);
+            outline-offset: 2px;
+        }
+    </style>
 </head>
-<body class="app-bg">
-	<header class="sticky-top">
-		<nav class="navbar navbar-expand-lg navbar-dark navbar-gradient border-0 shadow-sm">
-			<div class="container-xl">
-				<a class="navbar-brand fw-semibold d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
-					<i class="bi bi-cpu-fill"></i>
-					<span>Equipment Rental</span>
-				</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+<body>
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-gradient border-0 shadow-sm">
+            <div class="container-xl">
+                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home"
+                   asp-action="Index">
+                    <i class="bi bi-cpu-fill"></i>
+                    <span>Equipment Rental</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="mainNavbar">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-house-door me-1"></i>Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Equipment" asp-action="Index"><i class="bi bi-grid me-1"></i>Equipment</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link position-relative" asp-area="" asp-controller="Favorite" asp-action="Index">
-                                <i class="bi bi-heart me-1"></i>Favorites
-                                <span class="badge rounded-pill bg-danger ms-1 align-middle">@FavoriteService.GetFavSize()</span>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door me-1"></i>
+                                <span>Home</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Rentals" asp-action="MyBookings"><i class="bi bi-journal-text me-1"></i>My bookings</a>
+                            <a class="nav-link" asp-area="" asp-controller="Equipment" asp-action="Index">
+                                <i class="bi bi-grid me-1"></i>
+                                <span>Equipment</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" asp-area="" asp-controller="Favorite"
+                               asp-action="Index">
+                                <i class="bi bi-heart-fill me-1"></i>
+                                <span>Favorites</span>
+                                <span class="badge rounded-pill bg-danger ms-1">@FavoriteService.GetFavSize()</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Rentals" asp-action="MyBookings">
+                                <i class="bi bi-journal-text me-1"></i>
+                                <span>My Bookings</span>
+                            </a>
                         </li>
                     </ul>
 
                     <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
-                        @if (User?.Identity?.IsAuthenticated ?? false)
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="btn btn-outline-light btn-sm dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-person-circle me-1"></i>Account
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end shadow">
-                                    <li><a class="dropdown-item" asp-controller="Rentals" asp-action="MyBookings"><i class="bi bi-journal-text me-2"></i>My bookings</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <form asp-controller="Account" asp-action="Logout" method="post" class="px-3 py-1">
-                                            <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2 px-0">
-                                                <i class="bi bi-box-arrow-right"></i><span>Sign out</span>
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="btn btn-outline-light btn-sm" asp-controller="Account" asp-action="Login">
-                                    <i class="bi bi-box-arrow-in-right"></i> Sign in
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-light text-primary btn-sm" asp-controller="Account" asp-action="Register">
-                                    <i class="bi bi-person-plus"></i> Sign up
-                                </a>
-                            </li>
-                        }
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light d-flex align-items-center gap-2"
+                               asp-controller="Account" asp-action="Profile" title="Profile">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Profile</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
-			</div>
-		</nav>
-	</header>
+            </div>
+        </nav>
+    </header>
 
     <div class="container-xl">
-        <main role="main" class="py-4">
+        <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="footer text-muted mt-auto py-3">
-        <div class="container-xl d-flex justify-content-between align-items-center small">
-            <span>&copy; 2025 - Equipment Rental</span>
-            <a class="link-secondary text-decoration-none" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="footer">
+        <div class="container-xl d-flex justify-content-between align-items-center">
+            <span>© 2025 Equipment Rental - Made with ❤️</span>
+            <a class="link-secondary text-decoration-none" asp-area="" asp-controller="Home"
+               asp-action="Privacy">Privacy Policy</a>
         </div>
     </footer>
 
@@ -100,4 +310,5 @@
     <partial name="_ToastPartial" />
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>

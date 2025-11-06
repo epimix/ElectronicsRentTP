@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using BusinessLogic.Interfaces;
 using DataAccess.Data.Entities;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 
 namespace ElectronicsRentTP.Controllers
@@ -101,6 +102,32 @@ namespace ElectronicsRentTP.Controllers
 
 
             return RedirectToAction("Login", "Account");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var model = new UserProfileViewModel
+            {
+                IsAuthenticated = User?.Identity?.IsAuthenticated ?? false
+            };
+
+            if (!model.IsAuthenticated)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                model.FullName = user.FullName;
+                model.Email = user.Email;
+                model.Birthdate = user.Birthdate;
+                var roles = await _userManager.GetRolesAsync(user);
+                model.Roles = roles.ToList();
+            }
+
+            return View(model);
         }
     }
 }

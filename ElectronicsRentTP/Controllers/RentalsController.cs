@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DataAccess.Data;
 using DataAccess.Data.Entities;
-using DataAccess.Data.Enum;
 using ElectronicsRentTP.Models;
 using ElectronicsRentTP.Extensions;
-using System.ComponentModel.DataAnnotations;
+using BusinessLogic.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ElectronicsRentTP.Controllers
 {
@@ -14,39 +14,25 @@ namespace ElectronicsRentTP.Controllers
     {
         private readonly EquipmentRentalDbContext _ctx;
         private readonly UserManager<User> _userManager;
+        private readonly IRentalService _rentalService;
 
-
-        public RentalsController(EquipmentRentalDbContext ctx, UserManager<User> userManager)
+        public RentalsController(EquipmentRentalDbContext ctx, UserManager<User> userManager, IRentalService rentalService)
         {
             _ctx = ctx;
             _userManager = userManager;
+            _rentalService = rentalService;
         }
-
-        
+        [Authorize]
         public async Task<IActionResult> Create(int equipmentId)
         {
-            var equipment = await _ctx.Equipments
-                .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Id == equipmentId);
-
-            if (equipment == null)
+            var vm = await _rentalService.InitializeRentalAsync(equipmentId);
+            if (vm == null)
             {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("can't find equipment", ToastType.danger));
-                return RedirectToAction("Index", "Equipment");
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Can't find equipment.", ToastType.danger));
+                return RedirectToAction("Index", "Home");
             }
-
-            var vm = new CreateRentalViewModel
-            {
-                EquipmentId = equipment.Id,
-                EquipmentName = equipment.Name,
-                PricePerHour = equipment.PricePerHour,
-                StartDate = DateTime.UtcNow.Date,
-                EndDate = DateTime.UtcNow.Date.AddDays(1)
-            };
-
             return View(vm);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -54,148 +40,64 @@ namespace ElectronicsRentTP.Controllers
         {
             if (!ModelState.IsValid)
             {
-                
-                var eq = await _ctx.Equipments.AsNoTracking().FirstOrDefaultAsync(e => e.Id == model.EquipmentId);
-                if (eq != null)
-                {
-                    model.EquipmentName = eq.Name;
-                    model.PricePerHour = eq.PricePerHour;
-                }
+                await PopulateEquipmentFields(model);
                 return View(model);
             }
 
             if (model.EndDate <= model.StartDate)
             {
-                ModelState.AddModelError(string.Empty, "end date must be later than start date.");
-                var eq = await _ctx.Equipments.AsNoTracking().FirstOrDefaultAsync(e => e.Id == model.EquipmentId);
-                if (eq != null)
-                {
-                    model.EquipmentName = eq.Name;
-                    model.PricePerHour = eq.PricePerHour;
-                }
-                return View(model);
-            }
-
-            var equipment = await _ctx.Equipments.FirstOrDefaultAsync(e => e.Id == model.EquipmentId);
-            if (equipment == null)
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("can't find an equipment", ToastType.danger));
-                return RedirectToAction("Index", "Equipment");
-            }
-
-            var overlappingRentalsCount = await _ctx.Rentals
-                .Where(r => r.EquipmentId == equipment.Id
-                            && r.Status != RentalStatus.Cancelled
-                            && r.Status != RentalStatus.Rejected
-
-                            && r.EndDate >= model.StartDate
-                            && r.StartDate <= model.EndDate)
-                .CountAsync();
-
-            if (overlappingRentalsCount >= equipment.Quantity)
-            {
-                ModelState.AddModelError(string.Empty, "this dates can't be booked.");
-                model.EquipmentName = equipment.Name;
-                model.PricePerHour = equipment.PricePerHour;
+                ModelState.AddModelError(string.Empty, "End date must be later than start date.");
+                await PopulateEquipmentFields(model);
                 return View(model);
             }
 
             var userId = _userManager.GetUserId(User);
-
             if (userId == null)
             {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("you must login to book something.", ToastType.info));
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("You must login to book something.", ToastType.info));
                 return RedirectToAction("Login", "Account");
             }
 
-            var totalHours = (decimal)(model.EndDate - model.StartDate).TotalHours;
-            if (totalHours <= 0) totalHours = 24m;
-
-            var totalPrice = Math.Round(totalHours * equipment.PricePerHour, 2);
-
-            var rental = new Rental
+            var (success, errorMessage, rental) = await _rentalService.CreateRentalAsync(model, userId);
+            if (!success)
             {
-                EquipmentId = equipment.Id,
-                UserId = userId,
-                StartDate = model.StartDate,
-                EndDate = model.EndDate,
-                Status = RentalStatus.Pending,
-                TotalPrice = totalPrice
-            };
+                ModelState.AddModelError(string.Empty, errorMessage);
+                await PopulateEquipmentFields(model);
+                return View(model);
+            }
 
-            _ctx.Rentals.Add(rental);
-            await _ctx.SaveChangesAsync();
-
-            TempData.Set(WebConstants.ToastMessage, new ToastModel("Booking created, wait for an confirmation.", ToastType.success));
-            return RedirectToAction("Details", new { id = rental.Id });
+            TempData.Set(WebConstants.ToastMessage, new ToastModel("Booking created. Await confirmation.", ToastType.success));
+            return RedirectToAction("Details", new { id = rental!.Id });
         }
 
+        private async Task PopulateEquipmentFields(CreateRentalViewModel model)
+        {
+            var eq = await _rentalService.GetEquipmentDetailsAsync(model.EquipmentId);
+            model.EquipmentName = eq.Name;
+            model.PricePerHour = eq.PricePerHour;
+        }
+
+        [Authorize]
         public async Task<IActionResult> MyBookings()
         {
             var userId = _userManager.GetUserId(User);
-            if (userId == null)
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("you must login into system.", ToastType.info));
-                return RedirectToAction("Login", "Account");
-            }
-
-            var rentals = await _ctx.Rentals
-                .AsNoTracking()
-                .Where(r => r.UserId == userId)
-                .Include(r => r.Equipment)
-                .OrderByDescending(r => r.StartDate)
-                .Select(r => new RentalListItemViewModel
-                {
-                    Id = r.Id,
-                    EquipmentId = r.EquipmentId,
-                    EquipmentName = r.Equipment.Name,
-                    StartDate = r.StartDate,
-                    EndDate = r.EndDate,
-                    Status = r.Status,
-                    TotalPrice = r.TotalPrice
-                })
-                .ToListAsync();
-
+            var rentals = await _rentalService.GetUserRentalsAsync(userId!, 1);
             return View(rentals);
         }
 
-
+        [Authorize]
         public async Task<IActionResult> Details(int id)
         {
-            var rental = await _ctx.Rentals
-                .AsNoTracking()
-                .Include(r => r.Equipment)
-                .Include(r => r.User)
-                .FirstOrDefaultAsync(r => r.Id == id);
+            var userId = _userManager.GetUserId(User);
+            var rentalDetails = await _rentalService.GetRentalDetailsAsync(id, userId!);
 
-            if (rental == null)
+            if (rentalDetails == null)
             {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("No booking found", ToastType.danger));
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Access denied or booking not found.", ToastType.danger));
                 return RedirectToAction("Index", "Home");
             }
 
-            var currentUserId = _userManager.GetUserId(User);
-
-            if (currentUserId == null || (rental.UserId != currentUserId /* && !User.IsInRole("Admin") */))
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Don't have access to this booking", ToastType.danger));
-                return RedirectToAction("Index", "Home");
-            }
-
-            var vm = new RentalDetailsViewModel
-            {
-                Id = rental.Id,
-                EquipmentId = rental.EquipmentId,
-                EquipmentName = rental.Equipment?.Name ?? "—",
-                StartDate = rental.StartDate,
-                EndDate = rental.EndDate,
-                Status = rental.Status,
-                TotalPrice = rental.TotalPrice,
-                UserEmail = rental.User?.Email,
-                EquipmentImageUrl = rental.Equipment?.ImageUrl
-            };
-
-            return View(vm);
+            return View(rentalDetails);
         }
     }
 }

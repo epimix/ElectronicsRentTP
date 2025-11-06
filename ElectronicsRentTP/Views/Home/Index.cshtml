@@ -1,17 +1,215 @@
-﻿@model List<Equipment>
+﻿@model List<BusinessLogic.Dtos.EquipmentDTO>
 
-<div class="text-center">
-    <h1 class="display-4">
-        Welcome to Equipment Rental
-        <img width="50" src="https://pngimg.com/d/ukraine_PNG16.png" alt="Ukraine" />
-    </h1>
-</div>
-
-<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-    @foreach (var i in Model)
-    {
-        <div class="col">
-            <partial name="_EquipmentCardPartial" model="@i" />
-        </div>
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        color: white;
+        text-align: center;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
     }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    @@keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .hero-title img {
+        width: 60px;
+        height: auto;
+        animation: wave 2s ease-in-out infinite;
+    }
+
+    @@keyframes wave {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-10deg); }
+        75% { transform: rotate(10deg); }
+    }
+
+    .hero-subtitle {
+        font-size: 1.15rem;
+        opacity: 0.95;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .equipment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        margin-bottom: 1.5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+
+    .empty-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-text {
+        color: #718096;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .btn-browse {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-browse:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    @@media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-title img {
+            width: 45px;
+        }
+
+        .hero-section {
+            padding: 2rem 1.5rem;
+        }
+
+        .equipment-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .hero-title {
+            font-size: 1.5rem;
+        }
+
+        .equipment-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            <span>Welcome to Equipment Rental</span>
+            <img src="https://pngimg.com/d/ukraine_PNG16.png" alt="Ukraine" />
+        </h1>
+        <p class="hero-subtitle">
+            Rent professional equipment for your projects. Fast, reliable, and affordable.
+        </p>
+    </div>
 </div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="section-header">
+        <h2 class="section-title">
+            <span>🔥</span>
+            <span>Featured Equipment</span>
+        </h2>
+    </div>
+
+    <div class="equipment-grid">
+        @foreach (var item in Model)
+        {
+            <div class="equipment-card-wrapper">
+                <partial name="_EquipmentCardPartial" model="@item" />
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3 class="empty-title">No Equipment Available</h3>
+        <p class="empty-text">Check back soon for new equipment listings!</p>
+        <a asp-controller="Equipment" asp-action="Index" class="btn-browse">
+            <span>🔍</span>
+            <span>Browse All Equipment</span>
+        </a>
+    </div>
+}

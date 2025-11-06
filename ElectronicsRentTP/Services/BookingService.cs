@@ -6,12 +6,10 @@ namespace ElectronicsRentTP.Services
     public class BookingService : IBookService
     {
         private readonly HttpContext httpContext;
-        private readonly EquipmentRentalDbContext ctx;
 
         public BookingService(EquipmentRentalDbContext ctx, IHttpContextAccessor contextAccessor)
         {
             this.httpContext = contextAccessor.HttpContext ?? throw new Exception("HttpContext is null.");
-            this.ctx = ctx;
         }
         public void Add(int id)
         {
