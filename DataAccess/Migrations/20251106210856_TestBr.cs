@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class TestBr : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -210,13 +210,23 @@ namespace DataAccess.Migrations
                     Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     PricePerHour = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ReviewCount = table.Column<int>(type: "int", nullable: false),
+                    ReviewSum = table.Column<int>(type: "int", nullable: false),
+                    AverageRating = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Equipments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Equipments_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Equipments_EquipmentCategories_CategoryId",
                         column: x => x.CategoryId,
@@ -258,6 +268,8 @@ namespace DataAccess.Migrations
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PaymentType = table.Column<int>(type: "int", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
@@ -325,15 +337,15 @@ namespace DataAccess.Migrations
 
             migrationBuilder.InsertData(
                 table: "Equipments",
-                columns: new[] { "Id", "CategoryId", "Description", "ImageUrl", "IsAvailable", "Name", "PricePerHour", "Quantity" },
+                columns: new[] { "Id", "AverageRating", "CategoryId", "Description", "ImageUrl", "IsAvailable", "Name", "PricePerHour", "Quantity", "ReviewCount", "ReviewSum", "Status", "UserId" },
                 values: new object[,]
                 {
-                    { 1, 6, "Professional mirrorless camera with 8K video recording and 45MP full-frame sensor", "https://cdn.media.amplience.net/i/canon/eos-r5_front_rf24-105mmf4lisusm_square_32c26ad194234d42b3cd9e582a21c99b", true, "Canon EOS R5 Camera", 50m, 2 },
-                    { 2, 5, "High-quality wireless microphone for professional audio recording", "https://sony.scene7.com/is/image/sonyglobalsolutions/ULTMIC1_Intro2_M?$productIntroPlatemobile$&fmt=png-alpha", true, "Sony Wireless Microphone", 15m, 5 },
-                    { 3, 4, "Powerful laptop for video editing and content creation", "https://bigmag.ua/image/cache/catalog/image/Product/Apple_MacBook_BY/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019%201(1)-2000x2000.jpg", true, "MacBook Pro 16", 30m, 3 },
-                    { 4, 6, "Professional drone with 4K camera and obstacle avoidance", "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=500", true, "DJI Mini 4 Pro Drone", 40m, 1 },
-                    { 5, 9, "High-quality PA speakers for events and presentations", "https://thumbs.static-thomann.de/thumb/padthumb600x600/pics/bdb/_51/519347/16724814_800.jpg", true, "Bose Professional Speakers", 25m, 2 },
-                    { 6, 7, "Professional 4K projector with 5000 lumens brightness", "https://musicmag.com.ua/media/catalog/product/cache/1/image/736x460/62defc7f46f3fbfc8afcd112227d1181/e/p/epson_pro_cinema_4040_front.jpg", true, "Epson Projector 4K", 35m, 2 }
+                    { 1, 0m, 6, "Professional mirrorless camera with 8K video recording and 45MP full-frame sensor", "https://cdn.media.amplience.net/i/canon/eos-r5_front_rf24-105mmf4lisusm_square_32c26ad194234d42b3cd9e582a21c99b", true, "Canon EOS R5 Camera", 50m, 2, 0, 0, 0, null },
+                    { 2, 0m, 5, "High-quality wireless microphone for professional audio recording", "https://sony.scene7.com/is/image/sonyglobalsolutions/ULTMIC1_Intro2_M?$productIntroPlatemobile$&fmt=png-alpha", true, "Sony Wireless Microphone", 15m, 5, 0, 0, 0, null },
+                    { 3, 0m, 4, "Powerful laptop for video editing and content creation", "https://bigmag.ua/image/cache/catalog/image/Product/Apple_MacBook_BY/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019%201(1)-2000x2000.jpg", true, "MacBook Pro 16", 30m, 3, 0, 0, 0, null },
+                    { 4, 0m, 6, "Professional drone with 4K camera and obstacle avoidance", "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=500", true, "DJI Mini 4 Pro Drone", 40m, 1, 0, 0, 0, null },
+                    { 5, 0m, 9, "High-quality PA speakers for events and presentations", "https://thumbs.static-thomann.de/thumb/padthumb600x600/pics/bdb/_51/519347/16724814_800.jpg", true, "Bose Professional Speakers", 25m, 2, 0, 0, 0, null },
+                    { 6, 0m, 7, "Professional 4K projector with 5000 lumens brightness", "https://musicmag.com.ua/media/catalog/product/cache/1/image/736x460/62defc7f46f3fbfc8afcd112227d1181/e/p/epson_pro_cinema_4040_front.jpg", true, "Epson Projector 4K", 35m, 2, 0, 0, 0, null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -379,6 +391,11 @@ namespace DataAccess.Migrations
                 name: "IX_Equipments_CategoryId",
                 table: "Equipments",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Equipments_UserId",
+                table: "Equipments",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Maintenances_EquipmentId",
@@ -445,10 +462,10 @@ namespace DataAccess.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "Equipments");
 
             migrationBuilder.DropTable(
-                name: "Equipments");
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "EquipmentCategories");

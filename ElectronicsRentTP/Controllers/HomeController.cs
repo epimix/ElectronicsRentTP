@@ -4,6 +4,7 @@ using ElectronicsRentTP.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using BusinessLogic.Dtos;
 
 namespace ElectronicsRentTP.Controllers
 {
@@ -16,11 +17,26 @@ namespace ElectronicsRentTP.Controllers
             this.eq = eq;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            var equipment = await eq.GetAll(null, null, null, null, null,null,null, 1 );
-            //var equipment = ctx.Equipments.Include(x => x.Category).ToList();
-            return View(equipment);
+            const int pageSize = 10;
+            var equipment = await eq.GetAll(null, null, null, null, null, null, null, page);
+            var totalCount = await eq.GetTotalCount(null, null, null, null, null, null);
+
+            var pagination = new PaginationInfo
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalCount
+            };
+
+            var result = new PagedResult<BusinessLogic.Dtos.EquipmentDTO>
+            {
+                Items = equipment.ToList(),
+                Pagination = pagination
+            };
+
+            return View(result);
         }
 
         public IActionResult Privacy()

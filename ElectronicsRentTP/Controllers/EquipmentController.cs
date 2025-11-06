@@ -8,6 +8,7 @@ using ElectronicsRentTP.Extensions;
 using ElectronicsRentTP.Models;
 using BusinessLogic.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 
 namespace ElectronicsRentTP.Controllers
 {
@@ -16,20 +17,43 @@ namespace ElectronicsRentTP.Controllers
         private readonly EquipmentRentalDbContext ctx;
         private readonly IEquipmentService eq;
         private readonly IMapper mapper;
-        public EquipmentController(EquipmentRentalDbContext ctx, IEquipmentService eq, IMapper mapper)
+        private readonly IReviewService reviewService;
+        private readonly UserManager<User> userManager;
+
+        public EquipmentController(
+            EquipmentRentalDbContext ctx,
+            IEquipmentService eq,
+            IMapper mapper,
+            IReviewService reviewService,
+            UserManager<User> userManager)
         {
             this.ctx = ctx;
             this.eq = eq;
             this.mapper = mapper;
+            this.reviewService = reviewService;
+            this.userManager = userManager;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            // LEFT JOIN
-            //var model = ctx.Equipments.Include(x => x.Category).ToList();
-            var models = await eq.GetAll(null, null, null, null, null, null, null, 1);
+            const int pageSize = 10;
+            var models = await eq.GetAll(null, null, null, null, null, null, null, page);
+            var totalCount = await eq.GetTotalCount(null, null, null, null, null, null);
 
-            return View(models);
+            var pagination = new PaginationInfo
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalCount
+            };
+
+            var result = new PagedResult<EquipmentDTO>
+            {
+                Items = models.ToList(),
+                Pagination = pagination
+            };
+
+            return View(result);
         }
 
         [HttpGet]
@@ -38,7 +62,47 @@ namespace ElectronicsRentTP.Controllers
             var equipment = await eq.GetById(id);
             if (equipment == null) return NotFound();
 
-            return View(mapper.Map<EquipmentDTO>(equipment));
+            var equipmentDto = mapper.Map<EquipmentDTO>(equipment);
+            var reviews = await reviewService.GetReviewsByEquipment(id);
+
+            ViewBag.Reviews = reviews.OrderByDescending(r => r.CreatedAt).ToList();
+            ViewBag.EquipmentId = id;
+            ViewBag.IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
+
+            return View(equipmentDto);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddReview(int equipmentId, int rating, string comment)
+        {
+            if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (rating < 1 || rating > 5)
+            {
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Rating must be between 1 and 5", ToastType.danger));
+                return RedirectToAction("Details", new { id = equipmentId });
+            }
+
+            if (string.IsNullOrWhiteSpace(comment))
+            {
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Comment cannot be empty", ToastType.danger));
+                return RedirectToAction("Details", new { id = equipmentId });
+            }
+
+            await reviewService.PostReview(user.Id, equipmentId, comment, rating);
+            TempData.Set(WebConstants.ToastMessage, new ToastModel("Review added successfully!"));
+
+            return RedirectToAction("Details", new { id = equipmentId });
         }
 
         [HttpGet]

@@ -67,14 +67,12 @@ namespace BusinessLogic.Services
             return await repo.GetByIdAsync(reviewId);
         }
 
-        public Task<List<Review>> GetReviewsByEquipment(int equipmentId)
+        public async Task<List<Review>> GetReviewsByEquipment(int equipmentId)
         {
-            var eq = eqRepo.GetByIdAsync(equipmentId);
-            if (eq == null) return Task.FromResult(new List<Review>());
-
-            return repo.GetAllAsync(
-                filtering: r => r.EquipmentId == equipmentId)
-                       .ContinueWith(t => t.Result.ToList());
+            var reviews = await repo.GetAllAsync(
+                filtering: r => r.EquipmentId == equipmentId,
+                includes: "User");
+            return reviews.ToList();
         }
 
         public Task<List<Review>> GetReviewsByUser(string userId)

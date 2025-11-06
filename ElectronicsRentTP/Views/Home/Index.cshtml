@@ -1,4 +1,4 @@
-﻿@model List<BusinessLogic.Dtos.EquipmentDTO>
+﻿@model ElectronicsRentTP.Models.PagedResult<BusinessLogic.Dtos.EquipmentDTO>
 
 <style>
     .hero-section {
@@ -20,13 +20,18 @@
         right: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
         animation: rotate 20s linear infinite;
     }
 
     @@keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     .hero-content {
@@ -52,9 +57,19 @@
     }
 
     @@keyframes wave {
-        0%, 100% { transform: rotate(0deg); }
-        25% { transform: rotate(-10deg); }
-        75% { transform: rotate(10deg); }
+
+        0%,
+        100% {
+            transform: rotate(0deg);
+        }
+
+        25% {
+            transform: rotate(-10deg);
+        }
+
+        75% {
+            transform: rotate(10deg);
+        }
     }
 
     .hero-subtitle {
@@ -103,8 +118,15 @@
     }
 
     @@keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-15px); }
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-15px);
+        }
     }
 
     .empty-title {
@@ -183,7 +205,7 @@
     </div>
 </div>
 
-@if (Model != null && Model.Any())
+@if (Model != null && Model.Items != null && Model.Items.Any())
 {
     <div class="section-header">
         <h2 class="section-title">
@@ -193,13 +215,196 @@
     </div>
 
     <div class="equipment-grid">
-        @foreach (var item in Model)
+        @foreach (var item in Model.Items)
         {
             <div class="equipment-card-wrapper">
                 <partial name="_EquipmentCardPartial" model="@item" />
             </div>
         }
     </div>
+
+    @if (Model.Pagination != null && Model.Pagination.TotalPages > 1)
+    {
+        <style>
+            .pagination-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 0.5rem;
+                margin: 3rem 0;
+                flex-wrap: wrap;
+            }
+
+            .pagination-btn {
+                min-width: 44px;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.5rem 1rem;
+                border: 2px solid transparent;
+                border-radius: 12px;
+                background: white;
+                color: #667eea;
+                font-weight: 600;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .pagination-btn::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0;
+                height: 0;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                transform: translate(-50%, -50%);
+                transition: width 0.6s, height 0.6s;
+                z-index: 0;
+            }
+
+            .pagination-btn:hover:not(.disabled):not(.active) {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                border-color: #667eea;
+                color: white;
+            }
+
+            .pagination-btn:hover:not(.disabled):not(.active)::before {
+                width: 300px;
+                height: 300px;
+            }
+
+            .pagination-btn span,
+            .pagination-btn {
+                position: relative;
+                z-index: 1;
+            }
+
+            .pagination-btn.active {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-color: transparent;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                transform: scale(1.1);
+            }
+
+            .pagination-btn.disabled {
+                background: #f1f5f9;
+                color: #cbd5e0;
+                cursor: not-allowed;
+                box-shadow: none;
+                border-color: #e2e8f0;
+            }
+
+            .pagination-btn.disabled::before {
+                display: none;
+            }
+
+            .pagination-info {
+                color: #718096;
+                font-size: 0.875rem;
+                margin: 0 1rem;
+                white-space: nowrap;
+            }
+
+            @@media (max-width: 768px) {
+                .pagination-container {
+                    gap: 0.25rem;
+                }
+
+                .pagination-btn {
+                    min-width: 40px;
+                    height: 40px;
+                    padding: 0.4rem 0.8rem;
+                    font-size: 0.875rem;
+                }
+
+                .pagination-info {
+                    width: 100%;
+                    text-align: center;
+                    margin: 1rem 0 0.5rem 0;
+                }
+            }
+        </style>
+
+        <div class="pagination-container">
+            @if (Model.Pagination.HasPreviousPage)
+            {
+                <a class="pagination-btn" href="?page=@(Model.Pagination.CurrentPage - 1)">
+                    <i class="bi bi-chevron-left"></i>
+                    <span class="d-none d-md-inline ms-1">Previous</span>
+                </a>
+            }
+            else
+            {
+                <span class="pagination-btn disabled">
+                    <i class="bi bi-chevron-left"></i>
+                    <span class="d-none d-md-inline ms-1">Previous</span>
+                </span>
+            }
+
+            @{
+                int startPage = Math.Max(1, Model.Pagination.CurrentPage - 2);
+                int endPage = Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2);
+
+                if (startPage > 1)
+                {
+                    <a class="pagination-btn" href="?page=1">1</a>
+                    if (startPage > 2)
+                    {
+                        <span class="pagination-btn disabled">...</span>
+                    }
+                }
+
+                for (int i = startPage; i <= endPage; i++)
+                {
+                    if (i == Model.Pagination.CurrentPage)
+                    {
+                        <span class="pagination-btn active">@i</span>
+                    }
+                    else
+                    {
+                        <a class="pagination-btn" href="?page=@i">@i</a>
+                    }
+                }
+
+                if (endPage < Model.Pagination.TotalPages)
+                {
+                    if (endPage < Model.Pagination.TotalPages - 1)
+                    {
+                        <span class="pagination-btn disabled">...</span>
+                    }
+                    <a class="pagination-btn" href="?page=@Model.Pagination.TotalPages">@Model.Pagination.TotalPages</a>
+                }
+            }
+
+            <div class="pagination-info">
+                Page @Model.Pagination.CurrentPage of @Model.Pagination.TotalPages
+            </div>
+
+            @if (Model.Pagination.HasNextPage)
+            {
+                <a class="pagination-btn" href="?page=@(Model.Pagination.CurrentPage + 1)">
+                    <span class="d-none d-md-inline me-1">Next</span>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            }
+            else
+            {
+                <span class="pagination-btn disabled">
+                    <span class="d-none d-md-inline me-1">Next</span>
+                    <i class="bi bi-chevron-right"></i>
+                </span>
+            }
+        </div>
+    }
 }
 else
 {

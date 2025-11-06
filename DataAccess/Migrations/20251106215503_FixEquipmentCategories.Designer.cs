@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(EquipmentRentalDbContext))]
-    [Migration("20251030101911_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251106215503_FixEquipmentCategories")]
+    partial class FixEquipmentCategories
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,6 +32,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AverageRating")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
@@ -57,9 +60,23 @@ namespace DataAccess.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReviewSum")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Equipments");
 
@@ -67,68 +84,302 @@ namespace DataAccess.Migrations
                         new
                         {
                             Id = 1,
+                            AverageRating = 0m,
                             CategoryId = 6,
                             Description = "Professional mirrorless camera with 8K video recording and 45MP full-frame sensor",
                             ImageUrl = "https://cdn.media.amplience.net/i/canon/eos-r5_front_rf24-105mmf4lisusm_square_32c26ad194234d42b3cd9e582a21c99b",
                             IsAvailable = true,
                             Name = "Canon EOS R5 Camera",
                             PricePerHour = 50m,
-                            Quantity = 2
+                            Quantity = 2,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
                         },
                         new
                         {
                             Id = 2,
+                            AverageRating = 0m,
                             CategoryId = 5,
                             Description = "High-quality wireless microphone for professional audio recording",
                             ImageUrl = "https://sony.scene7.com/is/image/sonyglobalsolutions/ULTMIC1_Intro2_M?$productIntroPlatemobile$&fmt=png-alpha",
                             IsAvailable = true,
                             Name = "Sony Wireless Microphone",
                             PricePerHour = 15m,
-                            Quantity = 5
+                            Quantity = 5,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
                         },
                         new
                         {
                             Id = 3,
+                            AverageRating = 0m,
                             CategoryId = 4,
                             Description = "Powerful laptop for video editing and content creation",
                             ImageUrl = "https://bigmag.ua/image/cache/catalog/image/Product/Apple_MacBook_BY/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019%201(1)-2000x2000.jpg",
                             IsAvailable = true,
                             Name = "MacBook Pro 16",
                             PricePerHour = 30m,
-                            Quantity = 3
+                            Quantity = 3,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
                         },
                         new
                         {
                             Id = 4,
+                            AverageRating = 0m,
                             CategoryId = 6,
                             Description = "Professional drone with 4K camera and obstacle avoidance",
                             ImageUrl = "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=500",
                             IsAvailable = true,
                             Name = "DJI Mini 4 Pro Drone",
                             PricePerHour = 40m,
-                            Quantity = 1
+                            Quantity = 1,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
                         },
                         new
                         {
                             Id = 5,
+                            AverageRating = 0m,
                             CategoryId = 9,
                             Description = "High-quality PA speakers for events and presentations",
                             ImageUrl = "https://thumbs.static-thomann.de/thumb/padthumb600x600/pics/bdb/_51/519347/16724814_800.jpg",
                             IsAvailable = true,
                             Name = "Bose Professional Speakers",
                             PricePerHour = 25m,
-                            Quantity = 2
+                            Quantity = 2,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
                         },
                         new
                         {
                             Id = 6,
+                            AverageRating = 0m,
                             CategoryId = 7,
                             Description = "Professional 4K projector with 5000 lumens brightness",
                             ImageUrl = "https://musicmag.com.ua/media/catalog/product/cache/1/image/736x460/62defc7f46f3fbfc8afcd112227d1181/e/p/epson_pro_cinema_4040_front.jpg",
                             IsAvailable = true,
                             Name = "Epson Projector 4K",
                             PricePerHour = 35m,
-                            Quantity = 2
+                            Quantity = 2,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 7,
+                            AverageRating = 0m,
+                            CategoryId = 6,
+                            Description = "Full-frame cinema camera for professional filmmaking with 4K 120fps recording",
+                            ImageUrl = "https://fotomost.com.ua/content/images/28/500x500l50nn0/sony-fx3-56165663061752.jpg",
+                            IsAvailable = true,
+                            Name = "Sony FX3 Cinema Camera",
+                            PricePerHour = 75m,
+                            Quantity = 2,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 8,
+                            AverageRating = 0m,
+                            CategoryId = 5,
+                            Description = "Broadcast-quality dynamic microphone perfect for podcasting and recording",
+                            ImageUrl = "https://soundstore.com.ua/content/images/32/1200x800l80nn0/mikrofony-i-mikrofonnye-radiosistemy8318-shure-sm7b.html-40795060250278.jpg",
+                            IsAvailable = true,
+                            Name = "Shure SM7B Microphone",
+                            PricePerHour = 20m,
+                            Quantity = 4,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 9,
+                            AverageRating = 0m,
+                            CategoryId = 10,
+                            Description = "A portable power station that can charge your devices and power your home.",
+                            ImageUrl = "https://fotosale.ua/images/products/66/products.66193.1.b.jpg",
+                            IsAvailable = true,
+                            Name = "EcoFlow DELTA Max 2000 charging station",
+                            PricePerHour = 25m,
+                            Quantity = 3,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 10,
+                            AverageRating = 0m,
+                            CategoryId = 6,
+                            Description = "Action camera with 5.3K video and HyperSmooth 6.0 stabilization",
+                            ImageUrl = "https://photorent.kiev.ua/wp-content/uploads/GoPro-12-black-3.jpg",
+                            IsAvailable = true,
+                            Name = "GoPro Hero 12",
+                            PricePerHour = 18m,
+                            Quantity = 5,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 11,
+                            AverageRating = 0m,
+                            CategoryId = 2,
+                            Description = "16-channel professional audio mixer with USB interface and effects",
+                            ImageUrl = "https://www.hytekelectronics.co.uk/wp-content/uploads/2017/04/YAM-MG16XU.jpg",
+                            IsAvailable = true,
+                            Name = "Yamaha MG16XU Mixer",
+                            PricePerHour = 30m,
+                            Quantity = 2,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 12,
+                            AverageRating = 0m,
+                            CategoryId = 8,
+                            Description = "Ultra HD 4K monitor perfect for video editing and color grading",
+                            ImageUrl = "https://m.media-amazon.com/images/I/51bwiYTxx2L.jpg",
+                            IsAvailable = true,
+                            Name = "BenQ 4K Monitor 32 inch",
+                            PricePerHour = 22m,
+                            Quantity = 4,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 13,
+                            AverageRating = 0m,
+                            CategoryId = 5,
+                            Description = "Professional on-camera shotgun microphone with advanced features",
+                            ImageUrl = "https://prodj.ua/image/cache/catalog/img1b/2020/01/20200105081539-920x920.webp",
+                            IsAvailable = true,
+                            Name = "Rode VideoMic Pro+",
+                            PricePerHour = 12m,
+                            Quantity = 6,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 14,
+                            AverageRating = 0m,
+                            CategoryId = 6,
+                            Description = "Professional zoom lens with constant f/2.8 aperture",
+                            ImageUrl = "https://fotosale.ua/images/products/54/products.54671.1.b.jpg",
+                            IsAvailable = true,
+                            Name = "Canon RF 24-70mm f/2.8 Lens",
+                            PricePerHour = 35m,
+                            Quantity = 2,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 15,
+                            AverageRating = 0m,
+                            CategoryId = 2,
+                            Description = "6-track portable audio recorder with interchangeable capsules",
+                            ImageUrl = "https://prodj.ua/image/cache/catalog/img3b/2020/11/20201103133205-920x920.webp",
+                            IsAvailable = true,
+                            Name = "Zoom H6 Recorder",
+                            PricePerHour = 28m,
+                            Quantity = 3,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 16,
+                            AverageRating = 0m,
+                            CategoryId = 6,
+                            Description = "The polarizing light filter increases the visual sharpness and purity of color in the photograph",
+                            ImageUrl = "https://fotosale.ua/images/products/19/products.19876.1.b.jpg",
+                            IsAvailable = true,
+                            Name = "RODENSTOCK HR Digital Super MC Circular-Pol filter ",
+                            PricePerHour = 45m,
+                            Quantity = 2,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 17,
+                            AverageRating = 0m,
+                            CategoryId = 2,
+                            Description = "Professional studio monitor headphones with exceptional sound quality",
+                            ImageUrl = "https://fotosale.ua/images/products/66/products.66114.1.b.jpg",
+                            IsAvailable = true,
+                            Name = "Headphones Sennheiser RS 195",
+                            PricePerHour = 10m,
+                            Quantity = 8,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 18,
+                            AverageRating = 0m,
+                            CategoryId = 6,
+                            Description = "Heavy-duty carbon fiber tripod with fluid head for smooth camera movements",
+                            ImageUrl = "https://fotosale.ua/images/products/36/products.36866.1.b.jpg",
+                            IsAvailable = true,
+                            Name = "Manfrotto Tripod",
+                            PricePerHour = 15m,
+                            Quantity = 5,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 19,
+                            AverageRating = 0m,
+                            CategoryId = 3,
+                            Description = "32-key customizable control deck for streaming and content creation",
+                            ImageUrl = "https://res.cloudinary.com/elgato-pwa/image/upload/q_auto,f_auto/v1725280007/Products/10GBO9901%20%28Stream%20Deck%20Studio%29/ATF/Stream-Deck-Studio-ATF-04.jpg",
+                            IsAvailable = true,
+                            Name = "Elgato Stream Deck Studio",
+                            PricePerHour = 18m,
+                            Quantity = 4,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
+                        },
+                        new
+                        {
+                            Id = 20,
+                            AverageRating = 0m,
+                            CategoryId = 1,
+                            Description = "Compact RGB constant light nameplate panel.",
+                            ImageUrl = "https://fotosale.ua/images/products/67/products.67303.1.b.jpg",
+                            IsAvailable = true,
+                            Name = "Aputure amaran Ace 25c",
+                            PricePerHour = 20m,
+                            Quantity = 3,
+                            ReviewCount = 0,
+                            ReviewSum = 0,
+                            Status = 0
                         });
                 });
 
@@ -276,10 +527,16 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("EquipmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentType")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("StartDate")
@@ -557,6 +814,10 @@ namespace DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DataAccess.Data.Entities.User", null)
+                        .WithMany("FavoriteEquipment")
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Category");
                 });
 
@@ -604,7 +865,7 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("DataAccess.Data.Entities.Review", b =>
                 {
                     b.HasOne("DataAccess.Data.Entities.Equipment", "Equipment")
-                        .WithMany()
+                        .WithMany("reviews")
                         .HasForeignKey("EquipmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -674,6 +935,8 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("DataAccess.Data.Entities.Equipment", b =>
                 {
                     b.Navigation("Rentals");
+
+                    b.Navigation("reviews");
                 });
 
             modelBuilder.Entity("DataAccess.Data.Entities.EquipmentCategory", b =>
@@ -683,6 +946,8 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("DataAccess.Data.Entities.User", b =>
                 {
+                    b.Navigation("FavoriteEquipment");
+
                     b.Navigation("RefreshTokens");
 
                     b.Navigation("Rentals");
