@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace ElectronicsRentTP.Models
 {
@@ -15,6 +16,9 @@ namespace ElectronicsRentTP.Models
         [DataType(DataType.Password)]
         [Compare("Password")]
         public string ConfirmPassword { get; set; }
+
+        public IFormFile? profileImageFile { get; set; }
+        public string? profileImageUrl { get; set; }
 
 
         [Required]

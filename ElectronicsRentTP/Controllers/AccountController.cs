@@ -35,12 +35,38 @@ namespace ElectronicsRentTP.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            string? finalImagePath = null;
+
+
+            if (model.profileImageFile != null && model.profileImageFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.profileImageFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.profileImageFile.CopyToAsync(stream);
+                }
+
+                finalImagePath = "/uploads/" + fileName;
+            }
+
+            else if (!string.IsNullOrWhiteSpace(model.profileImageUrl))
+            {
+                finalImagePath = model.profileImageUrl;
+            }
+
             var user = new User
             {
                 UserName = model.Email,
                 Email = model.Email,
                 FullName = model.FullName,
-                Birthdate = model.Birthdate
+                Birthdate = model.Birthdate,
+                profilePicture = finalImagePath
             };
 
             try
@@ -125,6 +151,7 @@ namespace ElectronicsRentTP.Controllers
                 model.Birthdate = user.Birthdate;
                 var roles = await _userManager.GetRolesAsync(user);
                 model.Roles = roles.ToList();
+                model.ProfilePicture = user.profilePicture;
             }
 
             return View(model);

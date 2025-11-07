@@ -9,6 +9,8 @@ namespace ElectronicsRentTP.Models
         public string? FullName { get; set; }
         public string? Email { get; set; }
         public DateTime? Birthdate { get; set; }
+
+        public string? ProfilePicture { get; set; }
         public IList<string> Roles { get; set; } = new List<string>();
     }
 }
