@@ -8,5 +8,8 @@ namespace BusinessLogic.Interfaces
 {
     public interface IFavoriteEquipmentDBService
     {
+        Task AddToFavorites(string userId, int equipmentId);
+        Task<IList<DataAccess.Data.Entities.Equipment>> GetFavoriteEquipmentIds(string userId);
+        Task RemoveFromFavorites(string userId, int equipmentId);
     }
 }

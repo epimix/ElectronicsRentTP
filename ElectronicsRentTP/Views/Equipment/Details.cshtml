@@ -1,42 +1,262 @@
 @model BusinessLogic.Dtos.EquipmentDTO
+@using DataAccess.Data.Entities
 
-<div class="row">
-    <div class="col-md-5 text-center">
-        <img src="@(Model.ImageUrl ?? "https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg")" alt="@Model.Name" class="img-fluid rounded" />
+<style>
+    .equipment-details-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .equipment-header {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+
+    .equipment-image {
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .rating-stars {
+        color: #fbbf24;
+        font-size: 1.5rem;
+        margin: 0.5rem 0;
+    }
+
+    .reviews-section {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-top: 2rem;
+    }
+
+    .review-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .review-author {
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .review-date {
+        color: #718096;
+        font-size: 0.875rem;
+    }
+
+    .review-rating {
+        color: #fbbf24;
+        margin-bottom: 0.5rem;
+    }
+
+    .review-form {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .star-rating {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .star-rating input[type="radio"] {
+        display: none;
+    }
+
+    .star-rating label {
+        font-size: 2rem;
+        color: #d1d5db;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #fbbf24;
+    }
+    
+    .star-rating input[type="radio"]:checked ~ label {
+        color: #fbbf24;
+    }
+    
+    .star-rating input[type="radio"]:checked + label {
+        color: #fbbf24;
+    }
+</style>
+
+<div class="equipment-details-container">
+    <div class="equipment-header">
+        <div class="row">
+            <div class="col-md-5 text-center">
+                <img src="@(Model.ImageUrl ?? "https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg")" 
+                     alt="@Model.Name" 
+                     class="equipment-image" />
+            </div>
+            <div class="col-md-7">
+                <h2>@Model.Name</h2>
+                <p class="text-muted">Category: @Model.CategoryName</p>
+                
+                @if (Model.AverageRating > 0)
+                {
+                    <div class="rating-stars">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= (int)Model.AverageRating)
+                            {
+                                <span>★</span>
+                            }
+                            else if (i - 0.5m <= Model.AverageRating)
+                            {
+                                <span>☆</span>
+                            }
+                            else
+                            {
+                                <span style="color: #d1d5db;">☆</span>
+                            }
+                        }
+                        <span style="color: #718096; font-size: 1rem; margin-left: 0.5rem;">@Model.AverageRating.ToString("F1")</span>
+                    </div>
+                }
+
+                <p>
+                    <b>Price per Hour:</b> <span style="color: #667eea; font-size: 1.25rem; font-weight: 700;">$@Model.PricePerHour</span>
+                </p>
+                <p>
+                    <b>Quantity Available:</b> @Model.Quantity
+                </p>
+                <p>
+                    <b>Status:</b>
+                    @if (Model.IsAvailable)
+                    {
+                        <span class="badge bg-success">Available</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning">Unavailable</span>
+                    }
+                </p>
+                <div>
+                    <b>Description:</b>
+                    <p>@(string.IsNullOrWhiteSpace(Model.Description) ? "Description not available" : Model.Description)</p>
+                </div>
+
+                <div class="mt-4 d-flex gap-2 flex-wrap">
+                    <a asp-action="Index" class="btn btn-dark">Back</a>
+                    <a asp-controller="Rentals" asp-action="Create" asp-route-equipmentId="@Model.Id" class="btn btn-primary">
+                        Rent it
+                    </a>
+                    <a asp-controller="Favorite" asp-action="Add" asp-route-id="@Model.Id" class="btn btn-outline-primary">Add to Favorite</a>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-7">
-        <h2>@Model.Name</h2>
-        <p class="text-muted">Category: @Model.CategoryName</p>
-        <p>
-            <b>Price per Hour:</b> $@Model.PricePerHour
-        </p>
-        <p>
-            <b>Quantity Available:</b> @Model.Quantity
-        </p>
-        <p>
-            <b>Status:</b>
-            @if (Model.IsAvailable)
-            {
-                <span class="badge bg-success">Available</span>
-            }
-            else
-            {
-                <span class="badge bg-warning">Unavailable</span>
-            }
-        </p>
-        <div>
-            <b>Description:</b>
-            <p>@(string.IsNullOrWhiteSpace(Model.Description) ? "Description not available" : Model.Description)</p>
-        </div>
 
-        <div class="mt-4 d-flex gap-2">
-            <a asp-action="Index" class="btn btn-dark">Back</a>
-            <a asp-controller="Rentals" asp-action="Create" asp-route-equipmentId="@Model.Id" class="btn btn-primary">
-                rent it
-            </a>
+    <div class="reviews-section">
+        <h3 class="mb-4">
+            <i class="bi bi-star-fill text-warning"></i>
+            Reviews (@(ViewBag.Reviews != null ? ((List<Review>)ViewBag.Reviews).Count : 0))
+        </h3>
 
-            <a asp-controller="Favorite" asp-action="Add" asp-route-id="@Model.Id" class="btn btn-primary">Add to Favorite</a>
-        </div>
+        @if (ViewBag.IsAuthenticated == true)
+        {
+            <div class="review-form">
+                <h5>Add Your Review</h5>
+                <form asp-action="AddReview" method="post">
+                    <input type="hidden" name="equipmentId" value="@ViewBag.EquipmentId" />
+                    
+                    <div class="star-rating mb-3" style="flex-direction: row-reverse;">
+                        <input type="radio" id="star5" name="rating" value="5" required>
+                        <label for="star5">★</label>
+                        <input type="radio" id="star4" name="rating" value="4" required>
+                        <label for="star4">★</label>
+                        <input type="radio" id="star3" name="rating" value="3" required>
+                        <label for="star3">★</label>
+                        <input type="radio" id="star2" name="rating" value="2" required>
+                        <label for="star2">★</label>
+                        <input type="radio" id="star1" name="rating" value="1" required>
+                        <label for="star1">★</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Your Comment</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="4" required placeholder="Share your experience..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Submit Review
+                    </button>
+                </form>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <a asp-controller="Account" asp-action="Login">Sign in</a> to leave a review.
+            </div>
+        }
+
+        @if (ViewBag.Reviews != null && ((List<Review>)ViewBag.Reviews).Any())
+        {
+            <div class="reviews-list">
+                @foreach (var review in (List<Review>)ViewBag.Reviews)
+                {
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div>
+                                <div class="review-author">
+                                    @(review.User?.FullName ?? review.User?.UserName ?? "Anonymous")
+                                </div>
+                                <div class="review-date">
+                                    @review.CreatedAt.ToString("MMMM dd, yyyy")
+                                </div>
+                            </div>
+                            <div class="review-rating">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= review.Rating)
+                                    {
+                                        <span>★</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #d1d5db;">☆</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <div class="review-comment">
+                            @review.Comment
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-chat-dots" style="font-size: 3rem;"></i>
+                <p class="mt-3">No reviews yet. Be the first to review this equipment!</p>
+            </div>
+        }
     </div>
 </div>
-

@@ -1,6 +1,5 @@
 ﻿using DataAccess.Data;
 using DataAccess.Data.Entities;
-using DataAccess.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
@@ -45,21 +44,30 @@ namespace ElectronicsRentTP.Middleware
 
             if (context.Request.Cookies.TryGetValue("sessionToken", out var token) && !string.IsNullOrEmpty(token))
             {
+                var jwtKey = _config["JwtOptions:Key"];
+                var jwtIssuer = _config["JwtOptions:Issuer"];
+                
+                if (string.IsNullOrEmpty(jwtKey) || string.IsNullOrEmpty(jwtIssuer))
+                {
+                    await RedirectToRegister(context);
+                    return;
+                }
+
                 var handler = new JwtSecurityTokenHandler();
-                var key = Encoding.UTF8.GetBytes(_config["JwtOptions:Key"]);
+                var key = Encoding.UTF8.GetBytes(jwtKey);
                 var parameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = true,
-                    ValidIssuer = _config["JwtOptions:Issuer"],
+                    ValidIssuer = jwtIssuer,
                     ValidateAudience = false,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 };
 
-                ClaimsPrincipal principal = null;
-                string userId = null;
+                ClaimsPrincipal? principal = null;
+                string? userId = null;
 
                 try
                 {
@@ -152,18 +160,22 @@ namespace ElectronicsRentTP.Middleware
 
         private string GenerateNewJwtToken(User user, IConfiguration config)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtOptions:Key"]));
+            var jwtKey = config["JwtOptions:Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
+            var jwtIssuer = config["JwtOptions:Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
+            var jwtAudience = config["JwtOptions:Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
+            
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName)
+                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
             };
 
             var token = new JwtSecurityToken(
-                issuer: config["JwtOptions:Issuer"],
-                audience: config["JwtOptions:Audience"],
+                issuer: jwtIssuer,
+                audience: jwtAudience,
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(1),
                 signingCredentials: creds

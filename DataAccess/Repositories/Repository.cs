@@ -73,12 +73,19 @@ namespace DataAccess.Repositories
             else
                 query = query.OrderBy(x => 0); // fallback щоб уникнути попередження EF
 
-            int totalBefore = await query.CountAsync();
-
             query = query.Skip((pageNumber!.Value - 1) * pageSize).Take(pageSize);
 
-            int totalAfter = await query.CountAsync();
             return await query.ToListAsync();
+        }
+
+        public async Task<int> CountAsync(Expression<Func<T, bool>>? filtering = null)
+        {
+            var query = set.AsQueryable();
+
+            if (filtering != null)
+                query = query.Where(filtering);
+
+            return await query.CountAsync();
         }
 
         public async Task<T?> GetByIdAsync(int id)

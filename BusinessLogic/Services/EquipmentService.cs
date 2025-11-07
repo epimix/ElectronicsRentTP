@@ -16,7 +16,7 @@ namespace BusinessLogic.Services
         private readonly IRepository<Equipment> repo;
         private readonly IMapper mapper;
 
-        public EquipmentService(IRepository<Equipment> repo,IMapper mapper)
+        public EquipmentService(IRepository<Equipment> repo, IMapper mapper)
         {
             this.repo = repo;
             this.mapper = mapper;
@@ -56,7 +56,7 @@ namespace BusinessLogic.Services
                 filterEx = filterEx.And(x => x.IsAvailable == IsAvailable.Value);
 
             var items = await repo.GetAllAsync(
-                pageNumber: 1,
+                pageNumber: pageNumber,
                 pageSize: 10,
                 filtering: filterEx,
                 orderBy: q =>
@@ -66,6 +66,37 @@ namespace BusinessLogic.Services
                 nameof(Equipment.Category), nameof(Equipment.reviews)
             );
             return mapper.Map<IList<EquipmentDTO>>(items);
+        }
+
+        public async Task<int> GetTotalCount(
+            int? filterCategoryId,
+            string? ByName,
+            string? ByDescription,
+            decimal? filterMin,
+            decimal? filterMax,
+            bool? IsAvailable)
+        {
+            var filterEx = PredicateBuilder.New<Equipment>(true);
+
+            if (filterCategoryId != null)
+                filterEx = filterEx.And(x => x.CategoryId == filterCategoryId);
+
+            if (!string.IsNullOrWhiteSpace(ByName))
+                filterEx = filterEx.And(x => x.Name.ToLower().Contains(ByName.ToLower()));
+
+            if (!string.IsNullOrWhiteSpace(ByDescription))
+                filterEx = filterEx.And(x => x.Description.ToLower().Contains(ByDescription.ToLower()));
+
+            if (filterMin != null)
+                filterEx = filterEx.And(x => x.PricePerHour >= filterMin.Value);
+
+            if (filterMax != null)
+                filterEx = filterEx.And(x => x.PricePerHour <= filterMax.Value);
+
+            if (IsAvailable != null)
+                filterEx = filterEx.And(x => x.IsAvailable == IsAvailable.Value);
+
+            return await repo.CountAsync(filterEx);
         }
 
 

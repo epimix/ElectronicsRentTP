@@ -15,6 +15,17 @@ namespace BusinessLogic.Services
         readonly private IRepository<Equipment> eqrepo;
         readonly private IUserServices userServices;
         readonly private EquipmentRentalDbContext ctx;
+
+        public FavoriteEquipmentDBService(
+            IRepository<Equipment> eqrepo,
+            IUserServices userServices,
+            EquipmentRentalDbContext ctx)
+        {
+            this.eqrepo = eqrepo;
+            this.userServices = userServices;
+            this.ctx = ctx;
+        }
+
         public async Task AddToFavorites(string userId, int equipmentId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -78,9 +89,9 @@ namespace BusinessLogic.Services
                 throw new ArgumentException("Equipment not found", nameof(equipmentId));
             }
 
-            if (user.FavoriteEquipment.Any(e => e.Id == equipmentId))
+            if (!user.FavoriteEquipment.Any(e => e.Id == equipmentId))
             {
-                throw new InvalidOperationException("This equipment is already in the user's favorites.");
+                throw new InvalidOperationException("This equipment is not in the user's favorites.");
             }
 
             user.FavoriteEquipment.Remove(equipment);

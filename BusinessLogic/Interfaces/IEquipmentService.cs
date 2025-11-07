@@ -20,6 +20,13 @@ namespace BusinessLogic.Interfaces
             bool? IsAvailable,
             int pageNumber
             );
+        Task<int> GetTotalCount(
+            int? filterCategoryId,
+            string? ByName,
+            string? ByDescription,
+            decimal? filterMin,
+            decimal? filterMax,
+            bool? IsAvailable);
         Task<Equipment?> GetById(int id);
         Task AddEquipment(Equipment equipment);
         Task UpdateEquipment(Equipment equipment);
