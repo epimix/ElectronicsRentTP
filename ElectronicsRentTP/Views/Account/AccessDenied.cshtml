@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<style>
+    .access-denied-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 4rem 1rem;
+        text-align: center;
+    }
+
+    .access-denied-container h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #ef4444;
+        margin-bottom: 1rem;
+    }
+
+    .access-denied-container p {
+        font-size: 1.1rem;
+        color: #4b5563;
+        margin-bottom: 2rem;
+    }
+
+    .btn-home {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-home:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .access-denied-emoji {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="access-denied-container">
+    <div class="access-denied-emoji">🚫</div>
+    <h2>Access Denied</h2>
+    <p>
+        You do not have permission to view this page.<br />
+        @if (ViewData["ReturnUrl"] != null)
+        {
+            <span>Attempted URL: @ViewData["ReturnUrl"]</span>
+        }
+    </p>
+    <a asp-controller="Home" asp-action="Index" class="btn-home">
+        <i class="bi bi-house-door"></i> Go to Home
+    </a>
+</div>

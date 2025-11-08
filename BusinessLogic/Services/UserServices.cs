@@ -10,7 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using DataAccess.Data;
-
+using System.Data;
+using ElectronicsRentTP.Helpers;
 namespace BusinessLogic.Services
 {
     public class UserServices : IUserServices
@@ -37,6 +38,11 @@ namespace BusinessLogic.Services
             var result = await userManager.CreateAsync(user, password);
             if (!result.Succeeded)
                 throw new Exception(result.Errors.FirstOrDefault()?.Description ?? "err");
+
+            if (user.Email.Contains("admin")) // в почті має бути admin щоб юзер став адміном
+                await userManager.AddToRoleAsync(user, Roles.ADMIN);
+            else
+                await userManager.AddToRoleAsync(user, Roles.USER);
         }
 
         public async Task<User?> Login(string login, string password, string? ipAddress)
@@ -47,6 +53,9 @@ namespace BusinessLogic.Services
 
             var refreshToken = jwtService.GenerateRefreshToken(ipAddress ?? "unknown");
             user.RefreshTokens.Add(refreshToken);
+
+            //await userManager.AddToRoleAsync(user, Roles.ADMIN); // еслі хочете добавить адмінку на юзера з якого заходите. після використання закоментувати
+
 
             await ctx.SaveChangesAsync();
             return user;

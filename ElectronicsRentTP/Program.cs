@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
+using ElectronicsRentTP.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,7 @@ builder.Services.AddDbContext<EquipmentRentalDbContext>(options =>
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<EquipmentRentalDbContext>()
     .AddDefaultTokenProviders();
+
 
 // -------------------- REPOSITORIES & SERVICES --------------------
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -72,6 +74,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.SeedRolesAndAdmin();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

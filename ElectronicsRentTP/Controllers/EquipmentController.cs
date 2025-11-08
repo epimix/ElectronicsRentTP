@@ -9,6 +9,8 @@ using ElectronicsRentTP.Models;
 using BusinessLogic.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using ElectronicsRentTP.Helpers;
 
 namespace ElectronicsRentTP.Controllers
 {
@@ -33,7 +35,7 @@ namespace ElectronicsRentTP.Controllers
             this.reviewService = reviewService;
             this.userManager = userManager;
         }
-
+        [Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Index(int page = 1)
         {
             const int pageSize = 10;
@@ -106,6 +108,7 @@ namespace ElectronicsRentTP.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = Roles.ADMIN)]
         public IActionResult Create()
         {
             SetCategoriesToViewBag();
@@ -114,6 +117,8 @@ namespace ElectronicsRentTP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = Roles.ADMIN)]
+
         public async Task<IActionResult> Create(EquipmentDTO equipment)
         {
             if (!ModelState.IsValid)
@@ -131,6 +136,8 @@ namespace ElectronicsRentTP.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = Roles.ADMIN)]
+
         public async Task<IActionResult> Edit(int id)
         {
             var equipment = await eq.GetById(id);
@@ -142,6 +149,7 @@ namespace ElectronicsRentTP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Edit(EquipmentDTO equipment)
         {
             if (!ModelState.IsValid)
@@ -156,7 +164,7 @@ namespace ElectronicsRentTP.Controllers
             return RedirectToAction("Index");
         }
 
-
+        [Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Delete(int id)
         {
             await eq.DeleteEquipment(id);
