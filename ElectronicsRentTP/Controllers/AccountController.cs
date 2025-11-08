@@ -24,6 +24,13 @@ namespace ElectronicsRentTP.Controllers
         }
 
         [HttpGet]
+        public IActionResult AccessDenied(string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
+        [HttpGet]
         public IActionResult Register()
         {
             return View();
