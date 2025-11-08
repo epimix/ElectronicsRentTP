@@ -15,7 +15,7 @@ namespace ElectronicsRentTP.Controllers
         {
             this.ctx = ctx;
         }
-        
+
         // GET: Cart
         public async Task<ActionResult> Index()
         {

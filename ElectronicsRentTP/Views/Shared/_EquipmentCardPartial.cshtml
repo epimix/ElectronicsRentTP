@@ -1,15 +1,276 @@
-@model BusinessLogic.Dtos.EquipmentDTO
+﻿@model BusinessLogic.Dtos.EquipmentDTO
 
-<div class="card h-100">
-    <img src="@Model.ImageUrl" class="card-img-top" alt="Equipment" onerror="this.src='https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg'">
-    <div class="card-body">
-        <h5 class="card-title">@Model.Name</h5>
-        <p class="card-text">@Model.CategoryName - $@Model.PricePerHour/hour</p>
-        <p class="card-text small">@Model.Description</p>
+<style>
+    .equipment-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .equipment-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+    .card-image-container {
+        position: relative;
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+        background: #f7fafc;
+    }
+
+    .card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: all 0.4s ease;
+    }
+
+    .equipment-card:hover .card-image {
+        transform: scale(1.1);
+    }
+
+    .availability-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 2;
+    }
+
+    .available {
+        color: #059669;
+    }
+
+    .unavailable {
+        color: #dc2626;
+    }
+
+    .card-content {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .equipment-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0 0 0.75rem 0;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .equipment-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .category-tag {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.375rem 0.875rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .price-tag {
+        color: #667eea;
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .equipment-description {
+        color: #718096;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1.25rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex: 1;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 0.75rem;
+        padding: 0 1.5rem 1.5rem 1.5rem;
+        margin-top: auto;
+    }
+
+    .btn-view-details {
+        flex: 1;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+        .btn-view-details:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            color: white;
+        }
+
+    .btn-favorite {
+        background: white;
+        color: #ef4444;
+        border: 2px solid #ef4444;
+        padding: 0.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        width: 48px;
+        height: 48px;
+    }
+
+        .btn-favorite:hover {
+            background: #ef4444;
+            color: white;
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-favorite i {
+            font-size: 1.25rem;
+        }
+
+    /* Quantity indicator */
+    .quantity-indicator {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        z-index: 2;
+    }
+
+    @@media (max-width: 768px) {
+        .card-image-container {
+            height: 200px;
+        }
+
+        .equipment-name {
+            font-size: 1.1rem;
+        }
+
+        .card-content {
+            padding: 1.25rem;
+        }
+
+        .card-actions {
+            padding: 0 1.25rem 1.25rem 1.25rem;
+        }
+    }
+</style>
+
+<div class="equipment-card">
+    <div class="card-image-container">
+        <img src="@Model.ImageUrl"
+             class="card-image"
+             alt="@Model.Name"
+             onerror="this.src='https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg'">
+
+        @if (Model.IsAvailable)
+        {
+            <span class="availability-badge available">✓ Available</span>
+        }
+        else
+        {
+            <span class="availability-badge unavailable">⚠ Unavailable</span>
+        }
+
+        @if (Model.Quantity > 0)
+        {
+            <span class="quantity-indicator">
+                <i class="bi bi-box-seam"></i>
+                <span>@Model.Quantity in stock</span>
+            </span>
+        }
     </div>
-    <div class="card-footer">
-        <a asp-controller="Equipment" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary">View Details</a>
-        <a asp-controller="Favorite" asp-action="Add" asp-route-id="@Model.Id" class="btn btn-success">Add to Favorite</a>
+
+    <div class="card-content">
+        <h5 class="equipment-name">@Model.Name</h5>
+
+        <div class="equipment-meta">
+            <span class="category-tag">
+                <i class="bi bi-tag"></i>
+                @Model.CategoryName
+            </span>
+            <span class="price-tag">
+                <i class="bi bi-currency-dollar"></i>
+                @Model.PricePerHour/hour
+            </span>
+        </div>
+
+        <p class="equipment-description">@(Model.Description ?? "No description available")</p>
+    </div>
+
+    <div class="card-actions">
+        <a asp-controller="Equipment"
+           asp-action="Details"
+           asp-route-id="@Model.Id"
+           class="btn-view-details">
+            <i class="bi bi-eye"></i>
+            <span>View Details</span>
+        </a>
+
+        <a asp-controller="Favorite"
+           asp-action="Add"
+           asp-route-id="@Model.Id"
+           class="btn-favorite"
+           title="Add to Favorites">
+            <i class="bi bi-heart-fill"></i>
+        </a>
     </div>
 </div>
-
