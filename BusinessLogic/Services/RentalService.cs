@@ -51,7 +51,7 @@ namespace BusinessLogic.Services
             if (equipment == null)
                 return (false, "can't find an equipment", null);
 
-            if (equipment.Status is EquipmentStatus.Rented or EquipmentStatus.Reserved)
+            if (equipment.Status is EquipmentStatus.Rented or EquipmentStatus.Reserved || !equipment.IsAvailable || equipment.Quantity <= 0)
                 return (false, "This equipment is currently not available.", null);
 
             var overlappingCount = await _rentalRepository.CountOverlappingRentalsAsync(

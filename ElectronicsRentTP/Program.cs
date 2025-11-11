@@ -12,6 +12,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using System;
 using ElectronicsRentTP.Helpers;
 
@@ -51,7 +52,8 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 
 // -------------------- AUTOMAPPER --------------------
 // Для AutoMapper 13.0.1
-/* (✌ﾟ∀ﾟ)☞ */builder.Services.AddAutoMapper(typeof(MapperProfile)); /*凸(⊙▂⊙✖ )*/ /*i love git hub copilot*/ /*he ended this phrase, it wasn't me (´⊙ω⊙`)*/
+/* (✌ﾟ∀ﾟ)☞ */
+builder.Services.AddAutoMapper(typeof(MapperProfile)); /*凸(⊙▂⊙✖ )*/ /*i love git hub copilot*/ /*he ended this phrase, it wasn't me (´⊙ω⊙`)*/
 
 // -------------------- CONTROLLERS --------------------
 builder.Services.AddControllersWithViews();

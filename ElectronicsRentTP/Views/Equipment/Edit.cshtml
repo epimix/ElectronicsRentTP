@@ -4,6 +4,7 @@
 
 <form class="row g-3" asp-action="Edit" method="post">
     <input asp-for="Id" type="hidden" value="@Model.Id" />
+    <input asp-for="IsAvailable" type="hidden" value="@Model.IsAvailable" />
     <div class="col-md-6">
         <label asp-for="Name" class="form-label">Equipment Name</label>
         <input asp-for="Name" type="text" class="form-control" placeholder="Enter equipment name">
@@ -27,12 +28,18 @@
         <span asp-validation-for="Quantity" class="small text-danger"></span>
     </div>
     <div class="col-md-4">
-        <label asp-for="IsAvailable" class="form-label">Available</label>
-        <select asp-for="IsAvailable" class="form-select">
-            <option value="True" selected="@Model.IsAvailable">Yes</option>
-            <option value="False" selected="@(!Model.IsAvailable)">No</option>
-        </select>
-        <span asp-validation-for="IsAvailable" class="small text-danger"></span>
+        <label class="form-label">Current Status</label>
+        <div class="form-control-plaintext">
+            @if (Model.IsAvailable)
+            {
+                <span class="badge bg-success">Available</span>
+            }
+            else
+            {
+                <span class="badge bg-warning">Unavailable</span>
+            }
+        </div>
+        <small class="form-text text-muted">Status is automatically updated based on quantity</small>
     </div>
     <div class="col-md-12">
         <label asp-for="ImageUrl" class="form-label">Image URL</label>
