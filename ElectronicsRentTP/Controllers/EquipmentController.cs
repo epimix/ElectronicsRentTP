@@ -36,11 +36,18 @@ namespace ElectronicsRentTP.Controllers
             this.userManager = userManager;
         }
         [Authorize(Roles = Roles.ADMIN)]
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(
+            int page = 1,
+            int? categoryId = null,
+            string? searchName = null,
+            decimal? minPrice = null,
+            decimal? maxPrice = null,
+            bool? isAvailable = null,
+            bool? sortPriceAsc = null)
         {
             const int pageSize = 10;
-            var models = await eq.GetAll(null, null, null, null, null, null, null, page);
-            var totalCount = await eq.GetTotalCount(null, null, null, null, null, null);
+            var models = await eq.GetAll(categoryId, searchName, null, minPrice, maxPrice, sortPriceAsc, isAvailable, page);
+            var totalCount = await eq.GetTotalCount(categoryId, searchName, null, minPrice, maxPrice, isAvailable);
 
             var pagination = new PaginationInfo
             {
@@ -54,6 +61,15 @@ namespace ElectronicsRentTP.Controllers
                 Items = models.ToList(),
                 Pagination = pagination
             };
+
+            // Set filter values to ViewBag for form
+            SetCategoriesToViewBag();
+            ViewBag.CategoryId = categoryId;
+            ViewBag.SearchName = searchName;
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
+            ViewBag.IsAvailable = isAvailable;
+            ViewBag.SortPriceAsc = sortPriceAsc;
 
             return View(result);
         }

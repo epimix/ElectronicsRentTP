@@ -162,9 +162,18 @@
 
                 <div class="mt-4 d-flex gap-2 flex-wrap">
                     <a asp-action="Index" class="btn btn-dark">Back</a>
-                    <a asp-controller="Rentals" asp-action="Create" asp-route-equipmentId="@Model.Id" class="btn btn-primary">
-                        Rent it
-                    </a>
+                    @if (Model.IsAvailable && Model.Quantity > 0)
+                    {
+                        <a asp-controller="Rentals" asp-action="Create" asp-route-equipmentId="@Model.Id" class="btn btn-primary">
+                            Rent it
+                        </a>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-secondary" disabled>
+                            Rent it (Unavailable)
+                        </button>
+                    }
                     <a asp-controller="Favorite" asp-action="Add" asp-route-id="@Model.Id" class="btn btn-outline-primary">Add to Favorite</a>
                 </div>
             </div>

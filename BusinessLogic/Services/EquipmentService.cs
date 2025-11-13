@@ -105,6 +105,8 @@ namespace BusinessLogic.Services
             if (equipment == null)
                 return;
 
+            equipment.IsAvailable = equipment.Quantity > 0;
+
             await repo.AddAsync(equipment);
         }
 
@@ -126,6 +128,8 @@ namespace BusinessLogic.Services
         {
             if (equipment == null)
                 return;
+
+            equipment.IsAvailable = equipment.Quantity > 0;
 
             await repo.UpdateAsync(equipment);
         }

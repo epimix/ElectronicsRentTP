@@ -205,216 +205,642 @@
     </div>
 </div>
 
-@if (Model != null && Model.Items != null && Model.Items.Any())
-{
-    <div class="section-header">
-        <h2 class="section-title">
-            <span>🔥</span>
-            <span>Featured Equipment</span>
-        </h2>
-    </div>
+<!-- Top Search Bar -->
+<style>
+    .top-search-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
 
-    <div class="equipment-grid">
-        @foreach (var item in Model.Items)
-        {
-            <div class="equipment-card-wrapper">
-                <partial name="_EquipmentCardPartial" model="@item" />
-            </div>
+    .top-search-form {
+        display: flex;
+        gap: 1rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .search-input-wrapper {
+        flex: 1;
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        padding-right: 3.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .search-btn {
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .search-btn:hover {
+        transform: translateY(-50%) scale(1.05);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Catalog Layout */
+    .catalog-container {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Sidebar */
+    .catalog-sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        height: fit-content;
+        position: sticky;
+        top: 2rem;
+    }
+
+    .sidebar-section {
+        margin-bottom: 2rem;
+    }
+
+    .sidebar-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .sidebar-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .category-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .category-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .category-link {
+        display: block;
+        padding: 0.75rem 1rem;
+        color: #4a5568;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+    }
+
+    .category-link:hover {
+        background: #f7fafc;
+        color: #667eea;
+        padding-left: 1.25rem;
+    }
+
+    .category-link.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+    }
+
+    .filter-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        display: block;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .filter-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .filter-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .price-range {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .price-range input {
+        flex: 1;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .btn-apply {
+        flex: 1;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-apply:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-clear {
+        flex: 1;
+        background: white;
+        color: #718096;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .btn-clear:hover {
+        border-color: #cbd5e0;
+        background: #f7fafc;
+    }
+
+    /* Products Grid */
+    .products-section {
+        min-width: 0;
+    }
+
+    .products-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .products-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .sort-select {
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .sort-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    @@media (max-width: 1024px) {
+        .catalog-container {
+            grid-template-columns: 240px 1fr;
+            gap: 1.5rem;
         }
-    </div>
+    }
 
-    @if (Model.Pagination != null && Model.Pagination.TotalPages > 1)
-    {
-        <style>
-            .pagination-container {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 0.5rem;
-                margin: 3rem 0;
-                flex-wrap: wrap;
-            }
+    @@media (max-width: 768px) {
+        .catalog-container {
+            grid-template-columns: 1fr;
+        }
 
-            .pagination-btn {
-                min-width: 44px;
-                height: 44px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0.5rem 1rem;
-                border: 2px solid transparent;
-                border-radius: 12px;
-                background: white;
-                color: #667eea;
-                font-weight: 600;
-                text-decoration: none;
-                transition: all 0.3s ease;
-                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
-                cursor: pointer;
-                position: relative;
-                overflow: hidden;
-            }
+        .catalog-sidebar {
+            position: static;
+            margin-bottom: 2rem;
+        }
 
-            .pagination-btn::before {
-                content: '';
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                width: 0;
-                height: 0;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                transform: translate(-50%, -50%);
-                transition: width 0.6s, height 0.6s;
-                z-index: 0;
-            }
+        .top-search-form {
+            flex-direction: column;
+        }
 
-            .pagination-btn:hover:not(.disabled):not(.active) {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-                border-color: #667eea;
-                color: white;
-            }
+        .search-btn {
+            position: static;
+            transform: none;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+    }
+</style>
 
-            .pagination-btn:hover:not(.disabled):not(.active)::before {
-                width: 300px;
-                height: 300px;
-            }
+<!-- Top Search Bar -->
+<div class="top-search-container">
+    <form method="get" action="@Url.Action("Index", "Home")" class="top-search-form">
+        <input type="hidden" name="categoryId" value="@ViewBag.CategoryId" />
+        <input type="hidden" name="minPrice" value="@ViewBag.MinPrice" />
+        <input type="hidden" name="maxPrice" value="@ViewBag.MaxPrice" />
+        <input type="hidden" name="isAvailable" value="@ViewBag.IsAvailable" />
+        <input type="hidden" name="sortPriceAsc" value="@ViewBag.SortPriceAsc" />
 
-            .pagination-btn span,
-            .pagination-btn {
-                position: relative;
-                z-index: 1;
-            }
+        <div class="search-input-wrapper">
+            <input type="text" name="searchName" value="@ViewBag.SearchName" class="search-input"
+                placeholder="Search equipment by name..." autocomplete="off" />
+            <button type="submit" class="search-btn">🔍 Search</button>
+        </div>
+    </form>
+</div>
 
-            .pagination-btn.active {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border-color: transparent;
-                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-                transform: scale(1.1);
-            }
-
-            .pagination-btn.disabled {
-                background: #f1f5f9;
-                color: #cbd5e0;
-                cursor: not-allowed;
-                box-shadow: none;
-                border-color: #e2e8f0;
-            }
-
-            .pagination-btn.disabled::before {
-                display: none;
-            }
-
-            .pagination-info {
-                color: #718096;
-                font-size: 0.875rem;
-                margin: 0 1rem;
-                white-space: nowrap;
-            }
-
-            @@media (max-width: 768px) {
-                .pagination-container {
-                    gap: 0.25rem;
-                }
-
-                .pagination-btn {
-                    min-width: 40px;
-                    height: 40px;
-                    padding: 0.4rem 0.8rem;
-                    font-size: 0.875rem;
-                }
-
-                .pagination-info {
-                    width: 100%;
-                    text-align: center;
-                    margin: 1rem 0 0.5rem 0;
-                }
-            }
-        </style>
-
-        <div class="pagination-container">
-            @if (Model.Pagination.HasPreviousPage)
-            {
-                <a class="pagination-btn" href="?page=@(Model.Pagination.CurrentPage - 1)">
-                    <i class="bi bi-chevron-left"></i>
-                    <span class="d-none d-md-inline ms-1">Previous</span>
-                </a>
-            }
-            else
-            {
-                <span class="pagination-btn disabled">
-                    <i class="bi bi-chevron-left"></i>
-                    <span class="d-none d-md-inline ms-1">Previous</span>
-                </span>
-            }
-
-            @{
-                int startPage = Math.Max(1, Model.Pagination.CurrentPage - 2);
-                int endPage = Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2);
-
-                if (startPage > 1)
+<!-- Catalog Layout -->
+<div class="catalog-container">
+    <!-- Sidebar -->
+    <aside class="catalog-sidebar">
+        <!-- Categories -->
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">📂 Categories</h3>
+            <ul class="category-list">
+                <li class="category-item">
+                    <a href="#" onclick="selectCategory(null); return false;"
+                        class="category-link @(ViewBag.CategoryId == null ? "active" : "")">
+                        All Categories
+                    </a>
+                </li>
+                @if (ViewBag.Categories != null)
                 {
-                    <a class="pagination-btn" href="?page=1">1</a>
-                    if (startPage > 2)
+                    @foreach (SelectListItem item in ViewBag.Categories)
                     {
-                        <span class="pagination-btn disabled">...</span>
+                        <li class="category-item">
+                            <a href="#" onclick="selectCategory(@item.Value); return false;"
+                                class="category-link @(item.Selected ? "active" : "")">
+                                @item.Text
+                            </a>
+                        </li>
                     }
                 }
+            </ul>
+        </div>
 
-                for (int i = startPage; i <= endPage; i++)
+        <!-- Filters -->
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">🔧 Filters</h3>
+            <form method="get" action="@Url.Action("Index", "Home")" id="filterForm">
+                <input type="hidden" name="searchName" value="@ViewBag.SearchName" />
+                <input type="hidden" name="categoryId" value="@ViewBag.CategoryId" />
+
+                <!-- Price Range -->
+                <div class="filter-group">
+                    <label class="filter-label">Price Range ($)</label>
+                    <div class="price-range">
+                        <input type="number" name="minPrice" value="@ViewBag.MinPrice" class="filter-input"
+                            placeholder="Min" step="0.01" min="0" />
+                        <span>-</span>
+                        <input type="number" name="maxPrice" value="@ViewBag.MaxPrice" class="filter-input"
+                            placeholder="Max" step="0.01" min="0" />
+                    </div>
+                </div>
+
+                              <!-- Sort -->
+                <div class="filter-group">
+                    <label class="filter-label">Sort by Price</label>
+                    <select name="sortPriceAsc" class="filter-input">
+                        <option value="">None</option>
+                        <option value="true" selected="@(ViewBag.SortPriceAsc == true)">Low to High</option>
+                        <option value="false" selected="@(ViewBag.SortPriceAsc == false)">High to Low</option>
+                    </select>
+                </div>
+
+                <!-- Apply/Clear Buttons -->
+                <div class="filter-actions">
+                    <button type="submit" class="btn-apply">Apply</button>
+                    <a href="@Url.Action("Index", "Home")" class="btn-clear">Clear</a>
+                </div>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Products Section -->
+    <main class="products-section">
+
+        @if (Model != null && Model.Items != null && Model.Items.Any())
+        {
+            <div class="products-header">
+                <h2 class="products-title">
+                    <span>🔥</span>
+                    <span>Equipment Catalog</span>
+                </h2>
+                <div>
+                    <select class="sort-select" onchange="applySort(this.value)">
+                        <option value="">Sort by...</option>
+                        <option value="true" selected="@(ViewBag.SortPriceAsc == true)">Price: Low to High</option>
+                        <option value="false" selected="@(ViewBag.SortPriceAsc == false)">Price: High to Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="equipment-grid">
+                @foreach (var item in Model.Items)
                 {
-                    if (i == Model.Pagination.CurrentPage)
+                    <div class="equipment-card-wrapper">
+                        <partial name="_EquipmentCardPartial" model="@item" />
+                    </div>
+                }
+            </div>
+
+            @if (Model.Pagination != null && Model.Pagination.TotalPages > 1)
+            {
+                <style>
+                    .pagination-container {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 0.5rem;
+                        margin: 3rem 0;
+                        flex-wrap: wrap;
+                    }
+
+                    .pagination-btn {
+                        min-width: 44px;
+                        height: 44px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 0.5rem 1rem;
+                        border: 2px solid transparent;
+                        border-radius: 12px;
+                        background: white;
+                        color: #667eea;
+                        font-weight: 600;
+                        text-decoration: none;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+                        cursor: pointer;
+                        position: relative;
+                        overflow: hidden;
+                    }
+
+                    .pagination-btn::before {
+                        content: '';
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        width: 0;
+                        height: 0;
+                        border-radius: 50%;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        transform: translate(-50%, -50%);
+                        transition: width 0.6s, height 0.6s;
+                        z-index: 0;
+                    }
+
+                    .pagination-btn:hover:not(.disabled):not(.active) {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                        border-color: #667eea;
+                        color: white;
+                    }
+
+                    .pagination-btn:hover:not(.disabled):not(.active)::before {
+                        width: 300px;
+                        height: 300px;
+                    }
+
+                    .pagination-btn span,
+                    .pagination-btn {
+                        position: relative;
+                        z-index: 1;
+                    }
+
+                    .pagination-btn.active {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border-color: transparent;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                        transform: scale(1.1);
+                    }
+
+                    .pagination-btn.disabled {
+                        background: #f1f5f9;
+                        color: #cbd5e0;
+                        cursor: not-allowed;
+                        box-shadow: none;
+                        border-color: #e2e8f0;
+                    }
+
+                    .pagination-btn.disabled::before {
+                        display: none;
+                    }
+
+                    .pagination-info {
+                        color: #718096;
+                        font-size: 0.875rem;
+                        margin: 0 1rem;
+                        white-space: nowrap;
+                    }
+
+                    @@media (max-width: 768px) {
+                        .pagination-container {
+                            gap: 0.25rem;
+                        }
+
+                        .pagination-btn {
+                            min-width: 40px;
+                            height: 40px;
+                            padding: 0.4rem 0.8rem;
+                            font-size: 0.875rem;
+                        }
+
+                        .pagination-info {
+                            width: 100%;
+                            text-align: center;
+                            margin: 1rem 0 0.5rem 0;
+                        }
+                    }
+                </style>
+
+                <div class="pagination-container">
+                    @if (Model.Pagination.HasPreviousPage)
                     {
-                        <span class="pagination-btn active">@i</span>
+                        var prevParams = new List<string> { $"page={Model.Pagination.CurrentPage - 1}" };
+                        if (ViewBag.CategoryId != null) prevParams.Add($"categoryId={ViewBag.CategoryId}");
+                        if (!string.IsNullOrEmpty(ViewBag.SearchName?.ToString()))
+                            prevParams.Add($"searchName={Uri.EscapeDataString(ViewBag.SearchName.ToString())}");
+                        if (ViewBag.MinPrice != null) prevParams.Add($"minPrice={ViewBag.MinPrice}");
+                        if (ViewBag.MaxPrice != null) prevParams.Add($"maxPrice={ViewBag.MaxPrice}");
+                        if (ViewBag.IsAvailable != null) prevParams.Add($"isAvailable={ViewBag.IsAvailable}");
+                        if (ViewBag.SortPriceAsc != null) prevParams.Add($"sortPriceAsc={ViewBag.SortPriceAsc}");
+                        var prevUrl = "?" + string.Join("&", prevParams);
+                        <a class="pagination-btn" href="@prevUrl">
+                            <i class="bi bi-chevron-left"></i>
+                            <span class="d-none d-md-inline ms-1">Previous</span>
+                        </a>
                     }
                     else
                     {
-                        <a class="pagination-btn" href="?page=@i">@i</a>
+                        <span class="pagination-btn disabled">
+                            <i class="bi bi-chevron-left"></i>
+                            <span class="d-none d-md-inline ms-1">Previous</span>
+                        </span>
                     }
-                }
 
-                if (endPage < Model.Pagination.TotalPages)
-                {
-                    if (endPage < Model.Pagination.TotalPages - 1)
+                    @{
+                        int startPage = Math.Max(1, Model.Pagination.CurrentPage - 2);
+                        int endPage = Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2);
+
+                        Func<int, string> buildUrl = (pageNum) =>
+                        {
+                            var queryParams = new List<string> { $"page={pageNum}" };
+                            if (ViewBag.CategoryId != null) queryParams.Add($"categoryId={ViewBag.CategoryId}");
+                            if (!string.IsNullOrEmpty(ViewBag.SearchName?.ToString()))
+                                queryParams.Add($"searchName={Uri.EscapeDataString(ViewBag.SearchName.ToString())}");
+                            if (ViewBag.MinPrice != null) queryParams.Add($"minPrice={ViewBag.MinPrice}");
+                            if (ViewBag.MaxPrice != null) queryParams.Add($"maxPrice={ViewBag.MaxPrice}");
+                            if (ViewBag.IsAvailable != null) queryParams.Add($"isAvailable={ViewBag.IsAvailable}");
+                            if (ViewBag.SortPriceAsc != null) queryParams.Add($"sortPriceAsc={ViewBag.SortPriceAsc}");
+                            return "?" + string.Join("&", queryParams);
+                        };
+
+                        if (startPage > 1)
+                        {
+                            <a class="pagination-btn" href="@buildUrl(1)">1</a>
+                            if (startPage > 2)
+                            {
+                                <span class="pagination-btn disabled">...</span>
+                            }
+                        }
+
+                        for (int i = startPage; i <= endPage; i++)
+                        {
+                            if (i == Model.Pagination.CurrentPage)
+                            {
+                                <span class="pagination-btn active">@i</span>
+                            }
+                            else
+                            {
+                                <a class="pagination-btn" href="@buildUrl(i)">@i</a>
+                            }
+                        }
+
+                        if (endPage < Model.Pagination.TotalPages)
+                        {
+                            if (endPage < Model.Pagination.TotalPages - 1)
+                            {
+                                <span class="pagination-btn disabled">...</span>
+                            }
+                            <a class="pagination-btn" href="@buildUrl(Model.Pagination.TotalPages)">@Model.Pagination.TotalPages</a>
+                        }
+                    }
+
+                    <div class="pagination-info">
+                        Page @Model.Pagination.CurrentPage of @Model.Pagination.TotalPages
+                    </div>
+
+                    @if (Model.Pagination.HasNextPage)
                     {
-                        <span class="pagination-btn disabled">...</span>
+                        var nextParams = new List<string> { $"page={Model.Pagination.CurrentPage + 1}" };
+                        if (ViewBag.CategoryId != null) nextParams.Add($"categoryId={ViewBag.CategoryId}");
+                        if (!string.IsNullOrEmpty(ViewBag.SearchName?.ToString()))
+                            nextParams.Add($"searchName={Uri.EscapeDataString(ViewBag.SearchName.ToString())}");
+                        if (ViewBag.MinPrice != null) nextParams.Add($"minPrice={ViewBag.MinPrice}");
+                        if (ViewBag.MaxPrice != null) nextParams.Add($"maxPrice={ViewBag.MaxPrice}");
+                        if (ViewBag.IsAvailable != null) nextParams.Add($"isAvailable={ViewBag.IsAvailable}");
+                        if (ViewBag.SortPriceAsc != null) nextParams.Add($"sortPriceAsc={ViewBag.SortPriceAsc}");
+                        var nextUrl = "?" + string.Join("&", nextParams);
+                        <a class="pagination-btn" href="@nextUrl">
+                            <span class="d-none d-md-inline me-1">Next</span>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
                     }
-                    <a class="pagination-btn" href="?page=@Model.Pagination.TotalPages">@Model.Pagination.TotalPages</a>
-                }
+                    else
+                    {
+                        <span class="pagination-btn disabled">
+                            <span class="d-none d-md-inline me-1">Next</span>
+                            <i class="bi bi-chevron-right"></i>
+                        </span>
+                    }
+                </div>
             }
-
-            <div class="pagination-info">
-                Page @Model.Pagination.CurrentPage of @Model.Pagination.TotalPages
-            </div>
-
-            @if (Model.Pagination.HasNextPage)
-            {
-                <a class="pagination-btn" href="?page=@(Model.Pagination.CurrentPage + 1)">
-                    <span class="d-none d-md-inline me-1">Next</span>
-                    <i class="bi bi-chevron-right"></i>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">📦</div>
+                <h3 class="empty-title">No Equipment Available</h3>
+                <p class="empty-text">Check back soon for new equipment listings!</p>
+                <a href="@Url.Action("Index")" class="btn-browse">
+                    <span>🔄</span>
+                    <span>Reset Filters</span>
                 </a>
-            }
-            else
-            {
-                <span class="pagination-btn disabled">
-                    <span class="d-none d-md-inline me-1">Next</span>
-                    <i class="bi bi-chevron-right"></i>
-                </span>
-            }
-        </div>
+            </div>
+        }
+    </main>
+</div>
+
+<script>
+    function applySort(value) {
+        const url = new URL(window.location.href);
+        if (value) {
+            url.searchParams.set('sortPriceAsc', value);
+        } else {
+            url.searchParams.delete('sortPriceAsc');
+        }
+        window.location.href = url.toString();
     }
-}
-else
-{
-    <div class="empty-state">
-        <div class="empty-icon">📦</div>
-        <h3 class="empty-title">No Equipment Available</h3>
-        <p class="empty-text">Check back soon for new equipment listings!</p>
-        <a asp-controller="Equipment" asp-action="Index" class="btn-browse">
-            <span>🔍</span>
-            <span>Browse All Equipment</span>
-        </a>
-    </div>
-}
+
+    function selectCategory(categoryId) {
+        const url = new URL(window.location.href);
+        if (categoryId) {
+            url.searchParams.set('categoryId', categoryId);
+        } else {
+            url.searchParams.delete('categoryId');
+        }
+        url.searchParams.set('page', '1'); // Reset to first page when changing category
+        window.location.href = url.toString();
+    }
+</script>
