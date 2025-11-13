@@ -1,0 +1,477 @@
+﻿@model List<DataAccess.Data.Entities.CartEntity>
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<style>
+    .cart-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .cart-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.375rem 0.875rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .cart-layout {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 2rem;
+    }
+
+    .cart-items-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .cart-item {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .cart-item:hover {
+        transform: translateX(4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        border-color: #667eea;
+    }
+
+    .item-image {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+    }
+
+    .item-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .item-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .item-category {
+        color: #718096;
+        font-size: 0.95rem;
+    }
+
+    .item-price {
+        color: #667eea;
+        font-size: 1.1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .quantity-label {
+        font-size: 0.875rem;
+        color: #718096;
+        font-weight: 600;
+    }
+
+    .quantity-value {
+        background: #f7fafc;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 700;
+        color: #2d3748;
+        min-width: 60px;
+        text-align: center;
+        border: 2px solid #e2e8f0;
+    }
+
+    .item-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-end;
+    }
+
+    .btn-remove {
+        background: white;
+        color: #ef4444;
+        border: 2px solid #ef4444;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-remove:hover {
+        background: #ef4444;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .cart-summary {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 2rem;
+        height: fit-content;
+    }
+
+    .summary-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0 0 1.5rem 0;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f7fafc;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        color: #718096;
+    }
+
+    .summary-row.total {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #f7fafc;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2d3748;
+    }
+
+    .summary-value {
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .summary-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-checkout {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        font-size: 1.05rem;
+    }
+
+    .btn-checkout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .btn-clear {
+        background: white;
+        color: #ef4444;
+        border: 2px solid #ef4444;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-clear:hover {
+        background: #ef4444;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-continue {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-continue:hover {
+        background: #667eea;
+        color: white;
+        transform: translateX(-4px);
+    }
+
+    .empty-cart {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        margin-bottom: 1.5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+
+    .empty-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-text {
+        color: #718096;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    @@media (max-width: 1024px) {
+        .cart-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-summary {
+            position: static;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .cart-item {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+        }
+
+        .item-actions {
+            width: 100%;
+            align-items: center;
+        }
+
+        .btn-remove {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="cart-container">
+    <div class="page-header">
+        <h2 class="page-title">
+            <span>🛒</span>
+            <span>Shopping Cart</span>
+            @if (Model != null && Model.Any())
+            {
+                <span class="cart-badge">@Model.Count items</span>
+            }
+        </h2>
+        <a asp-controller="Equipment" asp-action="Index" class="btn-continue">
+            <i class="bi bi-arrow-left"></i>
+            <span>Continue Shopping</span>
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="cart-layout">
+            <div class="cart-items-section">
+                @foreach (var item in Model)
+                {
+                    <div class="cart-item">
+                        <img src="@(item.Equipment?.ImageUrl ?? "https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg")"
+                             alt="@item.Equipment?.Name"
+                             class="item-image"
+                             onerror="this.src='https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg'">
+
+                        <div class="item-details">
+                            <h3 class="item-name">@item.Equipment?.Name</h3>
+                            <div class="item-category">
+                                <i class="bi bi-tag"></i> @item.Equipment?.Category?.Name
+                            </div>
+                            <div class="item-price">
+                                <i class="bi bi-currency-dollar"></i>
+                                <span>@item.Equipment?.PricePerHour/hour</span>
+                            </div>
+                            <div class="quantity-control">
+                                <span class="quantity-label">Quantity:</span>
+                                <span class="quantity-value">@item.Quantity</span>
+                            </div>
+                        </div>
+
+                        <div class="item-actions">
+                            <div class="item-price" style="font-size: 1.25rem;">
+                                Subtotal: $@((item.Equipment?.PricePerHour ?? 0) * item.Quantity)
+                            </div>
+                            <form asp-action="Remove" method="post" style="margin: 0;">
+                                <input type="hidden" name="equipmentId" value="@item.EquipmentId" />
+                                <button type="submit" class="btn-remove">
+                                    <i class="bi bi-trash"></i>
+                                    <span>Remove</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="cart-summary">
+                <h3 class="summary-title">Order Summary</h3>
+
+                <div class="summary-row">
+                    <span>Subtotal (@Model.Count items)</span>
+                    <span class="summary-value">
+                        $@Model.Sum(x => (x.Equipment?.PricePerHour ?? 0) * x.Quantity)
+                    </span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Service Fee</span>
+                    <span class="summary-value">$0.00</span>
+                </div>
+
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span class="summary-value">
+                        $@Model.Sum(x => (x.Equipment?.PricePerHour ?? 0) * x.Quantity)
+                    </span>
+                </div>
+
+                <div class="summary-actions">
+                    <a asp-controller="Rentals" asp-action="Create" class="btn-checkout">
+                        <i class="bi bi-credit-card"></i>
+                        <span>Proceed to Checkout</span>
+                    </a>
+
+                    <form asp-action="Clear" method="post" style="margin: 0;">
+                        <button type="submit" class="btn-clear" onclick="return confirm('Are you sure you want to clear your cart?')">
+                            <i class="bi bi-x-circle"></i>
+                            <span>Clear Cart</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #f7fafc; border-radius: 8px; font-size: 0.875rem; color: #718096;">
+                    <i class="bi bi-shield-check" style="color: #667eea;"></i>
+                    <strong>Secure Checkout</strong><br>
+                    Your payment information is encrypted and secure.
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-cart">
+            <div class="empty-icon">🛒</div>
+            <h3 class="empty-title">Your Cart is Empty</h3>
+            <p class="empty-text">Looks like you haven't added any equipment to your cart yet.</p>
+            <a asp-controller="Equipment" asp-action="Index" class="btn-checkout">
+                <i class="bi bi-search"></i>
+                <span>Browse Equipment</span>
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts
+{
+    <script>
+        // Додаємо підтвердження для видалення
+        document.querySelectorAll('.btn-remove').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (!confirm('Are you sure you want to remove this item from cart?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}

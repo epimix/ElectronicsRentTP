@@ -22,6 +22,36 @@ namespace DataAccess.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("DataAccess.Data.Entities.CartEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EquipmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CartEntities");
+                });
+
             modelBuilder.Entity("DataAccess.Data.Entities.Equipment", b =>
                 {
                     b.Property<int>("Id")
@@ -806,6 +836,25 @@ namespace DataAccess.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("DataAccess.Data.Entities.CartEntity", b =>
+                {
+                    b.HasOne("DataAccess.Data.Entities.Equipment", "Equipment")
+                        .WithMany()
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Data.Entities.User", "User")
+                        .WithMany("Carts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Equipment");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DataAccess.Data.Entities.Equipment", b =>
                 {
                     b.HasOne("DataAccess.Data.Entities.EquipmentCategory", "Category")
@@ -946,6 +995,8 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("DataAccess.Data.Entities.User", b =>
                 {
+                    b.Navigation("Carts");
+
                     b.Navigation("FavoriteEquipment");
 
                     b.Navigation("RefreshTokens");

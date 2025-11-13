@@ -23,6 +23,6 @@ namespace DataAccess.Repositories
         Task DeleteAsync(int id);
         Task DeleteAsync(T entity);
         Task ClearAsync();
-
+        Task SaveChange();
     }
 }

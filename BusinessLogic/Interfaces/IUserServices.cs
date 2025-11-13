@@ -11,14 +11,15 @@ namespace BusinessLogic.Interfaces
     public interface IUserServices
     {
 
-            Task Register(User user, string password);
-            Task<User?> Login(string login, string password, string? ipAddress);
-            Task Logout();
-            Task<List<User>> GetAll();
-            Task<User?> GetById(string id);
-            Task Delete(string id);
-            Task Update(User user);
-            Task ResetPassword(string email, string newPassword);
+        Task Register(User user, string password);
+        Task<User?> Login(string login, string password, string? ipAddress);
+        Task Logout();
+        Task<List<User>> GetAll();
+        Task<User?> GetById(string id);
+        Task Delete(string id);
+        Task Update(User user);
+        Task ResetPassword(string email, string newPassword);
+        Task AddToCart(CartEntity cartEntity);
         
     }
 }
