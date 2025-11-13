@@ -14,6 +14,8 @@ namespace DataAccess.Data.Entities
 
         public List<Rental> Rentals { get; set; } = new List<Rental>();
 
+        public List<CartEntity> Carts { get; set; }
+
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
     }

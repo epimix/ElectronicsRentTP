@@ -17,8 +17,7 @@ namespace DataAccess.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Maintenance> Maintenances { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; } = default!;
-
-
+        public DbSet<CartEntity> CartEntities { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

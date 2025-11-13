@@ -73,7 +73,10 @@ namespace BusinessLogic.Services
 
         public async Task<User?> GetById(string id)
         {
-            return await ctx.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return await ctx.Users
+                .Include(u => u.Carts)
+                .Include(u => u.Rentals)
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task Delete(string id)
@@ -102,6 +105,18 @@ namespace BusinessLogic.Services
 
             if (!result.Succeeded)
                 throw new Exception("Password reset failed");
+        }
+        public async Task AddToCart(CartEntity cartEntity)
+        {
+            var user = await ctx.Users
+                .Include(u => u.Carts)
+                .FirstOrDefaultAsync(u => u.Id == cartEntity.UserId);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            user.Carts.Add(cartEntity);
+            await ctx.SaveChangesAsync();
         }
     }
 }
