@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 
 namespace BusinessLogic.Services
 {
@@ -15,11 +16,15 @@ namespace BusinessLogic.Services
     {
         private readonly IRepository<Equipment> repo;
         private readonly IMapper mapper;
+        private readonly IUserServices userServices;
+        private readonly UserManager<User> userManager;
 
-        public EquipmentService(IRepository<Equipment> repo, IMapper mapper)
+        public EquipmentService(IRepository<Equipment> repo, IMapper mapper,IUserServices userServices,UserManager<User> userManager)
         {
             this.repo = repo;
             this.mapper = mapper;
+            this.userServices = userServices;
+            this.userManager = userManager;
         }
 
         public async Task<IList<EquipmentDTO>> GetAll(
@@ -108,6 +113,9 @@ namespace BusinessLogic.Services
             equipment.IsAvailable = equipment.Quantity > 0;
 
             await repo.AddAsync(equipment);
+
+            await userServices.AddEquip(equipment);
+            
         }
 
         public async Task DeleteEquipment(int id)

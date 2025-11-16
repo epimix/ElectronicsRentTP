@@ -1,0 +1,63 @@
+﻿@model IList<DataAccess.Data.Entities.Equipment>
+
+@{
+    ViewData["Title"] = "My Equipments";
+}
+
+<h2 class="mb-4">Мої оголошення</h2>
+
+@if (Model == null || Model.Count == 0)
+{
+    <div class="alert alert-info">
+        Ви ще не створили жодного оголошення.
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+
+                    <img class="card-img-top" src="@item.ImageUrl"
+                         alt="Equipment image"
+                         onerror="this.src='/images/no-image.png'" />
+
+                    <div class="card-body">
+
+                        <h5 class="card-title">@item.Name</h5>
+
+                        <p class="text-muted">Категорія: @item.Category?.Name</p>
+
+                        @if (!string.IsNullOrEmpty(item.Description))
+                        {
+                            <p>@item.Description</p>
+                        }
+
+                        <p class="fw-bold">₴@item.PricePerHour за годину</p>
+
+                        <p>
+                            Статус:
+                            <span class="badge @(item.IsAvailable ? "bg-success" : "bg-danger")">
+                                @(item.IsAvailable ? "Доступно" : "Недоступно")
+                            </span>
+                        </p>
+
+                        <div class="d-flex gap-2">
+                            <a asp-controller="Equipment" asp-action="Details" asp-route-id="@item.Id"
+                               class="btn btn-primary btn-sm">Переглянути</a>
+
+                            <a asp-controller="Equipment" asp-action="Edit" asp-route-id="@item.Id"
+                               class="btn btn-warning btn-sm">Редагувати</a>
+
+                            <a asp-controller="Equipment" asp-action="Delete" asp-route-id="@item.Id"
+                               class="btn btn-danger btn-sm">Видалити</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

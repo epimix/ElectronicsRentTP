@@ -13,6 +13,7 @@ namespace DataAccess.Data
 
         public DbSet<Equipment> Equipments { get; set; }
         public DbSet<EquipmentCategory> EquipmentCategories { get; set; }
+ 
         public DbSet<Rental> Rentals { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Maintenance> Maintenances { get; set; }
@@ -39,6 +40,18 @@ namespace DataAccess.Data
             modelBuilder.Entity<Rental>()
                 .Property(r => r.TotalPrice)
                 .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Rental>()
+            .HasOne(r => r.User)
+            .WithMany(u => u.Rentals)
+            .HasForeignKey(r => r.UserId);
+
+            modelBuilder.Entity<Equipment>()
+                .HasOne(e => e.Owner)
+                .WithMany(u => u.MyAdverts)
+                .HasForeignKey(e => e.OwnerId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<User>()
                 .Property(u => u.Balance)

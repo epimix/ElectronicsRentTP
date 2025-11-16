@@ -81,6 +81,9 @@ namespace DataAccess.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<decimal>("PricePerHour")
                         .HasColumnType("decimal(18,2)");
 
@@ -102,6 +105,8 @@ namespace DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("OwnerId");
 
                     b.HasIndex("UserId");
 
@@ -863,11 +868,18 @@ namespace DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DataAccess.Data.Entities.User", "Owner")
+                        .WithMany("MyAdverts")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("DataAccess.Data.Entities.User", null)
                         .WithMany("FavoriteEquipment")
                         .HasForeignKey("UserId");
 
                     b.Navigation("Category");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("DataAccess.Data.Entities.Maintenance", b =>
@@ -998,6 +1010,8 @@ namespace DataAccess.Migrations
                     b.Navigation("Carts");
 
                     b.Navigation("FavoriteEquipment");
+
+                    b.Navigation("MyAdverts");
 
                     b.Navigation("RefreshTokens");
 
