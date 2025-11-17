@@ -142,9 +142,11 @@ namespace ElectronicsRentTP.Controllers
                 SetCategoriesToViewBag();
                 return View(equipment);
             }
-
+            var userId = userManager.GetUserId(User);
+            var user = await userManager.FindByIdAsync(userId);
             Equipment equ = mapper.Map<Equipment>(equipment);
 
+            equ.OwnerId = userId;
             await eq.AddEquipment(equ);
             TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment created successfully!"));
 

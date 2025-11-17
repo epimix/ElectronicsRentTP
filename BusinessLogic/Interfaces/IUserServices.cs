@@ -20,6 +20,8 @@ namespace BusinessLogic.Interfaces
         Task Update(User user);
         Task ResetPassword(string email, string newPassword);
         Task AddToCart(CartEntity cartEntity);
-        
+        Task AddEquip(Equipment equipment);
+
+
     }
 }

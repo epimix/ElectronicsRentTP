@@ -99,5 +99,14 @@ namespace ElectronicsRentTP.Controllers
 
             return View(rentalDetails);
         }
+
+        [Authorize]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var Task = await _rentalService.DeleteRentalAsync(id, userId!);
+            var rentals = await _rentalService.GetUserRentalsAsync(userId!, 1);
+            return RedirectToAction("MyBookings");
+        }
     }
 }

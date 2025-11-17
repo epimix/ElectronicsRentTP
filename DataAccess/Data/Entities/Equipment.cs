@@ -31,6 +31,8 @@ namespace DataAccess.Data.Entities
         public int ReviewSum { get; set; } = 0;
         public decimal AverageRating { get; set; } = 0;
 
+        public string? OwnerId { get; set; }
+        public User? Owner { get; set; }
         public bool IsAvailable { get; set; }
         public EquipmentStatus Status { get; set; } = EquipmentStatus.Free;
         [Required]
@@ -38,6 +40,8 @@ namespace DataAccess.Data.Entities
         public int Quantity { get; set; }
 
         public string? ImageUrl { get; set; }
+
+        
         public ICollection<Review> reviews { get; set; } = new List<Review>();
         public ICollection<Rental> Rentals { get; set; } = new List<Rental>();
     }

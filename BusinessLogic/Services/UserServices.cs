@@ -76,6 +76,7 @@ namespace BusinessLogic.Services
             return await ctx.Users
                 .Include(u => u.Carts)
                 .Include(u => u.Rentals)
+                .Include(u => u.MyAdverts)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 
@@ -116,6 +117,17 @@ namespace BusinessLogic.Services
                 throw new Exception("User not found");
 
             user.Carts.Add(cartEntity);
+            await ctx.SaveChangesAsync();
+        }
+
+        public async Task AddEquip(Equipment equipment)
+        {
+            var user = await ctx.Users
+            .Include(u => u.MyAdverts)
+            .FirstOrDefaultAsync(u => u.Id == equipment.OwnerId);
+            if (!await userManager.IsInRoleAsync(user, Roles.ADMIN))
+                throw new Exception("Only admins can add equipment");
+            user.MyAdverts.Add(equipment);
             await ctx.SaveChangesAsync();
         }
     }
