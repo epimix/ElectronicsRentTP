@@ -22,29 +22,35 @@ namespace DataAccess.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Equipment>()
-                .Property(e => e.AverageRating)
-                .HasColumnType("decimal(18,2)");
+
             modelBuilder.Entity<Rental>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.Rentals)
-                .HasForeignKey(r => r.UserId);
-            modelBuilder.Entity<Equipment>()
-                .Property(e => e.PricePerHour)
-                .HasColumnType("decimal(18,2)");
+              .HasOne(r => r.User)
+              .WithMany(u => u.Rentals)
+              .HasForeignKey(r => r.UserId)
+              .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Maintenance>()
-                .Property(m => m.Cost)
-                .HasColumnType("decimal(18,2)");
+            // Owner of equipment
+            modelBuilder.Entity<Rental>()
+                .HasOne(r => r.Owner)
+                .WithMany()
+                .HasForeignKey(r => r.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
+            // Decimal types
             modelBuilder.Entity<Rental>()
                 .Property(r => r.TotalPrice)
                 .HasColumnType("decimal(18,2)");
 
-            modelBuilder.Entity<Rental>()
-            .HasOne(r => r.User)
-            .WithMany(u => u.Rentals)
-            .HasForeignKey(r => r.UserId);
+
+            // ----- EQUIPMENT -----
+
+            modelBuilder.Entity<Equipment>()
+                .Property(e => e.PricePerHour)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Equipment>()
+                .Property(e => e.AverageRating)
+                .HasColumnType("decimal(18,2)");
 
             modelBuilder.Entity<Equipment>()
                 .HasOne(e => e.Owner)
@@ -52,6 +58,16 @@ namespace DataAccess.Data
                 .HasForeignKey(e => e.OwnerId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
+
+
+            // ----- MAINTENANCE -----
+
+            modelBuilder.Entity<Maintenance>()
+                .Property(m => m.Cost)
+                .HasColumnType("decimal(18,2)");
+
+
+            // ----- USER -----
 
             modelBuilder.Entity<User>()
                 .Property(u => u.Balance)

@@ -68,6 +68,7 @@ namespace BusinessLogic.Services
             {
                 EquipmentId = equipment.Id,
                 UserId = userId,
+                OwnerId = equipment.OwnerId,
                 StartDate = model.StartDate,
                 Description = model.Description,
                 PaymentType = model.PaymentType,
@@ -103,7 +104,8 @@ namespace BusinessLogic.Services
         {
             var rental = await _rentalRepository.GetByIdAsync(id,
                 r => r.Equipment,
-                r => r.User);
+                r => r.User,
+                r => r.Owner );
 
             if (rental == null || rental.UserId != currentUserId)
                 return null;
@@ -118,6 +120,7 @@ namespace BusinessLogic.Services
                 Status = rental.Status,
                 TotalPrice = rental.TotalPrice,
                 UserEmail = rental.User?.Email,
+                OwnerEmail = rental.Owner?.Email,
                 Description = rental.Description,
                 PaymentType = rental.PaymentType,
                 EquipmentImageUrl = rental.Equipment?.ImageUrl

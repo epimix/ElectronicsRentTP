@@ -68,7 +68,7 @@ namespace BusinessLogic.Services
                     SortPriceAsc == true ? q.OrderBy(e => e.PricePerHour) :
                     SortPriceAsc == false ? q.OrderByDescending(e => e.PricePerHour) :
                     q.OrderBy(e => e.Id),
-                nameof(Equipment.Category), nameof(Equipment.reviews)
+                nameof(Equipment.Category), nameof(Equipment.reviews), nameof(Equipment.Owner)
             );
             return mapper.Map<IList<EquipmentDTO>>(items);
         }

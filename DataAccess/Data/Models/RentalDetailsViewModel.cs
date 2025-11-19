@@ -13,6 +13,8 @@ namespace ElectronicsRentTP.Models
         public RentalStatus Status { get; set; }
         public decimal TotalPrice { get; set; }
         public string? UserEmail { get; set; }
+
+        public string? OwnerEmail { get; set; } = null;
         public string? EquipmentImageUrl { get; set; }
         public string? Description { get; set; }
         public PaymentType PaymentType { get; set; }
