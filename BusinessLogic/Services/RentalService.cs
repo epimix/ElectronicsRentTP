@@ -105,7 +105,7 @@ namespace BusinessLogic.Services
             var rental = await _rentalRepository.GetByIdAsync(id,
                 r => r.Equipment,
                 r => r.User,
-                r => r.Owner );
+                r => r.Owner);
 
             if (rental == null || rental.UserId != currentUserId)
                 return null;
@@ -168,5 +168,73 @@ namespace BusinessLogic.Services
                 ? (true, string.Empty)
                 : (false, "Failed to delete rental.");
         }
+        public async Task ConfirmRental(int rentalId)
+        {
+            var rental = await _rentalRepository.GetByIdAsync(rentalId);
+            if (rental != null)
+            {
+                rental.Status = RentalStatus.Approved;
+                _rentalRepository.Update(rental);
+                await _rentalRepository.SaveChangesAsync();
+            }
+        }
+        public async Task CancelRental(int rentalId)
+        {
+            var rental = await _rentalRepository.GetByIdAsync(rentalId);
+            if (rental != null)
+            {
+                rental.Status = RentalStatus.Cancelled;
+                _rentalRepository.Update(rental);
+                await _rentalRepository.SaveChangesAsync();
+            }
+        }
+        public async Task<IList<RentalDetailsViewModel>> GetNotConfirmRental(string userId)
+        {
+            var rentals = await _rentalRepository.GetNotConfirmedRentalsAsync(userId);
+
+            return rentals.Select(r => new RentalDetailsViewModel
+            {
+                Id = r.Id,
+                EquipmentId = r.EquipmentId,
+                EquipmentName = r.Equipment?.Name ?? "—",
+                StartDate = r.StartDate,
+                EndDate = r.EndDate,
+                Status = r.Status,
+                TotalPrice = r.TotalPrice,
+                UserEmail = r.User?.Email,
+                OwnerEmail = r.Owner?.Email,
+                Description = r.Description,
+                PaymentType = r.PaymentType,
+                EquipmentImageUrl = r.Equipment?.ImageUrl
+            }).ToList();
+        }
+
+        public async Task RejectRental(int rentalId)
+        {
+            var rental = await _rentalRepository.GetByIdAsync(rentalId);
+            if (rental != null)
+            {
+                rental.Status = RentalStatus.Rejected;
+                _rentalRepository.Update(rental);
+                await _rentalRepository.SaveChangesAsync();
+            }
+
+        }
+
+        public async Task AutoCompleteRentalsAsync()
+        {
+            var now = DateTime.UtcNow;
+
+            var rentals = await _rentalRepository.GetExpiredActiveRentalsAsync(now);
+
+            foreach (var rental in rentals)
+            {
+                rental.Status = RentalStatus.Completed;
+                _rentalRepository.Update(rental);
+            }
+            if (rentals.Count > 0)
+                await _rentalRepository.SaveChangesAsync();
+        }
+
     }
 }

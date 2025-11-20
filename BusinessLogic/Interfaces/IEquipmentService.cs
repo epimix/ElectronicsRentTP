@@ -28,7 +28,7 @@ namespace BusinessLogic.Interfaces
             decimal? filterMax,
             bool? IsAvailable);
         Task<Equipment?> GetById(int id);
-        Task AddEquipment(Equipment equipment);
+        Task AddEquipment(Equipment equipment, string userId);
         Task UpdateEquipment(Equipment equipment);
         Task DeleteEquipment(int id);
     }

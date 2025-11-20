@@ -105,10 +105,12 @@ namespace BusinessLogic.Services
         }
 
 
-        public async Task AddEquipment(Equipment equipment)
+        public async Task AddEquipment(Equipment equipment, string userId)
         {
             if (equipment == null)
                 return;
+            if(!string.IsNullOrEmpty(userId))
+                equipment.OwnerId = userId;
 
             equipment.IsAvailable = equipment.Quantity > 0;
 

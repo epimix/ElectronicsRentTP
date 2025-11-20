@@ -14,6 +14,7 @@ using ElectronicsRentTP.Helpers;
 
 namespace ElectronicsRentTP.Controllers
 {
+    [Authorize] // але я залогінений в тому і прикол
     public class EquipmentController : Controller
     {
         private readonly EquipmentRentalDbContext ctx;
@@ -21,21 +22,24 @@ namespace ElectronicsRentTP.Controllers
         private readonly IMapper mapper;
         private readonly IReviewService reviewService;
         private readonly UserManager<User> userManager;
+        private readonly IRentalService rentalService;
 
         public EquipmentController(
             EquipmentRentalDbContext ctx,
             IEquipmentService eq,
             IMapper mapper,
             IReviewService reviewService,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IRentalService rentalService)
         {
             this.ctx = ctx;
             this.eq = eq;
             this.mapper = mapper;
             this.reviewService = reviewService;
             this.userManager = userManager;
+            this.rentalService = rentalService;
         }
-        [Authorize(Roles = Roles.ADMIN)]
+        //[Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Index(
             int page = 1,
             int? categoryId = null,
@@ -71,6 +75,8 @@ namespace ElectronicsRentTP.Controllers
             ViewBag.IsAvailable = isAvailable;
             ViewBag.SortPriceAsc = sortPriceAsc;
 
+            await rentalService.AutoCompleteRentalsAsync();
+
             return View(result);
         }
 
@@ -91,7 +97,6 @@ namespace ElectronicsRentTP.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddReview(int equipmentId, int rating, string comment)
         {
             if (!User.Identity?.IsAuthenticated ?? true)
@@ -124,7 +129,7 @@ namespace ElectronicsRentTP.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = Roles.ADMIN)]
+        //[Authorize(Roles = Roles.ADMIN)]
         public IActionResult Create()
         {
             SetCategoriesToViewBag();
@@ -133,8 +138,7 @@ namespace ElectronicsRentTP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = Roles.ADMIN)]
-
+        //[Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Create(EquipmentDTO equipment)
         {
             if (!ModelState.IsValid)
@@ -147,15 +151,15 @@ namespace ElectronicsRentTP.Controllers
             Equipment equ = mapper.Map<Equipment>(equipment);
 
             equ.OwnerId = userId;
-            await eq.AddEquipment(equ);
-            TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment created successfully!"));
+            await eq.AddEquipment(equ, userId);
+            TempData.Set(WebConstants.ToastMessage, new ToastModel("eq created successfully"));
 
             return RedirectToAction("Index");
+            // але коли через адміна то товар норм додається
         }
-
+                // але товар добавляється
         [HttpGet]
-        [Authorize(Roles = Roles.ADMIN)]
-
+        //[Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Edit(int id)
         {
             var equipment = await eq.GetById(id);
@@ -167,7 +171,7 @@ namespace ElectronicsRentTP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = Roles.ADMIN)]
+        //[Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Edit(EquipmentDTO equipment)
         {
             if (!ModelState.IsValid)
@@ -182,7 +186,7 @@ namespace ElectronicsRentTP.Controllers
             return RedirectToAction("Index");
         }
 
-        [Authorize(Roles = Roles.ADMIN)]
+        //[Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Delete(int id)
         {
             await eq.DeleteEquipment(id);

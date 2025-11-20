@@ -61,6 +61,12 @@ namespace BusinessLogic.Services
             if (user == null)
                 throw new ArgumentException("User not found.");
 
+            // Завантажуємо кожен товар повністю з БД
+            foreach (var cartItem in user.Carts)
+            {
+                cartItem.Equipment = await equipmentRepo.GetByIdAsync(cartItem.EquipmentId);
+            }
+
             return user.Carts;
         }
 

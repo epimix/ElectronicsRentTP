@@ -82,5 +82,22 @@ namespace DataAccess.Repositories
         {
             _ctx.Rentals.Remove(rental);
         }
+        public async Task<List<Rental>> GetNotConfirmedRentalsAsync(string ownerId)
+        {
+            return await _ctx.Rentals
+                .AsNoTracking()
+                .Where(r => r.OwnerId == ownerId && r.Status == RentalStatus.Pending)
+                .Include(r => r.Equipment)
+                .Include(r => r.User)
+                .Include(r => r.Owner)
+                .OrderByDescending(r => r.StartDate)
+                .ToListAsync();
+        }
+        public async Task<List<Rental>> GetExpiredActiveRentalsAsync(DateTime now)
+        {
+            return await _ctx.Rentals
+                .Where(r => r.Status == RentalStatus.Approved && r.EndDate < now)
+                .ToListAsync();
+        }
     }
 }

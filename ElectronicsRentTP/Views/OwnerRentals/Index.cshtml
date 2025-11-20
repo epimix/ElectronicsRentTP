@@ -1,0 +1,486 @@
+﻿@model IList<ElectronicsRentTP.Models.RentalDetailsViewModel>
+@{
+    ViewData["Title"] = "Rental Requests";
+}
+
+<style>
+    .owner-rentals-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .requests-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1.25rem;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .rentals-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .rental-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        display: grid;
+        grid-template-columns: 200px 1fr auto;
+        gap: 1.5rem;
+    }
+
+    .rental-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        border-color: #667eea;
+    }
+
+    .rental-card.pending {
+        border-left: 5px solid #f59e0b;
+    }
+
+    .rental-image {
+        width: 200px;
+        height: 100%;
+        min-height: 200px;
+        object-fit: cover;
+        background: #f7fafc;
+    }
+
+    .rental-content {
+        padding: 1.5rem 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .rental-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .equipment-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1.25rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-approved {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-rejected {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .rental-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        color: #718096;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        color: #2d3748;
+        font-weight: 600;
+    }
+
+    .price-highlight {
+        color: #667eea;
+        font-size: 1.25rem;
+    }
+
+    .description-box {
+        background: #f7fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 3px solid #667eea;
+    }
+
+    .description-text {
+        color: #718096;
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .rental-actions {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        justify-content: center;
+        background: #f7fafc;
+        border-left: 1px solid #e2e8f0;
+    }
+
+    .btn-approve {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        white-space: nowrap;
+    }
+
+    .btn-approve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-reject {
+        background: white;
+        color: #ef4444;
+        border: 2px solid #ef4444;
+        padding: 0.875rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .btn-reject:hover {
+        background: #ef4444;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-cancel {
+        background: white;
+        color: #f59e0b;
+        border: 2px solid #f59e0b;
+        padding: 0.875rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .btn-cancel:hover {
+        background: #f59e0b;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        margin-bottom: 1.5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+
+    .empty-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-text {
+        color: #718096;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #667eea;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 1024px) {
+        .rental-card {
+            grid-template-columns: 1fr;
+        }
+
+        .rental-image {
+            width: 100%;
+            height: 250px;
+        }
+
+        .rental-content {
+            padding: 1.5rem;
+        }
+
+        .rental-actions {
+            padding: 1.5rem;
+            flex-direction: row;
+            border-left: none;
+            border-top: 1px solid #e2e8f0;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .rental-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rental-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="owner-rentals-container">
+    <div class="page-header">
+        <h2 class="page-title">
+            <span>🏢</span>
+            <span>Rental Requests</span>
+            @if (Model != null && Model.Any())
+            {
+                <span class="requests-badge">@Model.Count pending</span>
+            }
+        </h2>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="rentals-grid">
+            @foreach (var rental in Model)
+            {
+                <div class="rental-card pending">
+                    <img src="@(rental.EquipmentImageUrl ?? "https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg")"
+                         alt="@rental.EquipmentName"
+                         class="rental-image"
+                         onerror="this.src='https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg'">
+
+                    <div class="rental-content">
+                        <div class="rental-header">
+                            <h3 class="equipment-name">@rental.EquipmentName</h3>
+                            <span class="status-badge status-@rental.Status.ToString().ToLower()">
+                                @switch (rental.Status)
+                                {
+                                    case DataAccess.Data.Enum.RentalStatus.Pending:
+                                        <span>⏳ Pending</span>
+                                        break;
+                                    case DataAccess.Data.Enum.RentalStatus.Approved:
+                                        <span>✅ Approved</span>
+                                        break;
+                                    case DataAccess.Data.Enum.RentalStatus.Rejected:
+                                        <span>❌ Rejected</span>
+                                        break;
+                                    default:
+                                        <span>@rental.Status</span>
+                                        break;
+                                }
+                            </span>
+                        </div>
+
+                        <div class="rental-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">👤 Customer</span>
+                                <span class="user-info">
+                                    <i class="bi bi-envelope"></i>
+                                    @rental.UserEmail
+                                </span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">🗓️ Start Date</span>
+                                <span class="info-value">@rental.StartDate.ToString("MMM dd, yyyy HH:mm")</span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">🏁 End Date</span>
+                                <span class="info-value">@rental.EndDate.ToString("MMM dd, yyyy HH:mm")</span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">⏱️ Duration</span>
+                                <span class="info-value">
+                                    @{
+                                        var duration = rental.EndDate - rental.StartDate;
+                                        var hours = (int)duration.TotalHours;
+                                        if (hours >= 24)
+                                        {
+                                            <text>@(hours / 24)d @(hours % 24)h</text>
+                                        }
+                                        else
+                                        {
+                                            <text>@hours hours</text>
+                                        }
+                                    }
+                                </span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">💰 Total Price</span>
+                                <span class="info-value price-highlight">$@rental.TotalPrice.ToString("0.00")</span>
+                            </div>
+
+                            <div class="info-item">
+                                <span class="info-label">💳 Payment</span>
+                                <span class="info-value">@rental.PaymentType</span>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(rental.Description))
+                        {
+                            <div class="description-box">
+                                <div class="info-label" style="margin-bottom: 0.5rem;">📝 Description</div>
+                                <p class="description-text">@rental.Description</p>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="rental-actions">
+                        @if (rental.Status == DataAccess.Data.Enum.RentalStatus.Pending)
+                        {
+                            <form asp-action="Approve" method="post" style="margin: 0;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@rental.Id" />
+                                <button type="submit" class="btn-approve" onclick="return confirm('Are you sure you want to approve this rental request?')">
+                                    <i class="bi bi-check-circle"></i>
+                                    <span>Approve</span>
+                                </button>
+                            </form>
+
+                            <form asp-action="Reject" method="post" style="margin: 0;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@rental.Id" />
+                                <button type="submit" class="btn-reject" onclick="return confirm('Are you sure you want to reject this rental request?')">
+                                    <i class="bi bi-x-circle"></i>
+                                    <span>Reject</span>
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="Cancel" method="post" style="margin: 0;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@rental.Id" />
+                                <button type="submit" class="btn-cancel" onclick="return confirm('Are you sure you want to cancel this rental?')">
+                                    <i class="bi bi-slash-circle"></i>
+                                    <span>Cancel</span>
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3 class="empty-title">No Pending Requests</h3>
+            <p class="empty-text">You don't have any rental requests at the moment. When customers rent your equipment, their requests will appear here.</p>
+        </div>
+    }
+</div>
+
+@section Scripts
+{
+    <script>
+        // Автоматичне оновлення кожні 30 секунд
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
+}
