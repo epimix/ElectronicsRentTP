@@ -17,5 +17,8 @@ namespace DataAccess.Repositories
         void Update(Rental rental);
         void Delete(Rental rental);
         Task<bool> SaveChangesAsync();
+        Task<List<Rental>> GetNotConfirmedRentalsAsync(string ownerId);
+        Task<List<Rental>> GetExpiredActiveRentalsAsync(DateTime now); // для автоматичного завершення оренд
+
     }
 }

@@ -17,6 +17,9 @@ namespace DataAccess.Data.Entities
         public string UserId { get; set; }
         public User User { get; set; }
 
+        public string? OwnerId { get; set; } = null;
+        public User? Owner { get; set; } = null;
+
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 

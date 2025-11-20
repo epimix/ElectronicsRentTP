@@ -19,5 +19,13 @@ namespace BusinessLogic.Interfaces
         Task<RentalDetailsViewModel?> GetRentalDetailsAsync(int id, string currentUserId);
         Task<(bool Success, string ErrorMessage)> UpdateRentalAsync(int id, string currentUserId, Action<Rental> updateAction);
         Task<(bool Success, string ErrorMessage)> DeleteRentalAsync(int id, string currentUserId);
+
+        Task ConfirmRental(int rentalId);
+        Task CancelRental(int rentalId); // для відміни замовником
+        Task RejectRental(int rentalId); // для відміни продавцем
+
+        Task AutoCompleteRentalsAsync(); // Автоматичне завершення оренд
+        Task<IList<RentalDetailsViewModel>> GetNotConfirmRental(string userId);
+
     }
 }

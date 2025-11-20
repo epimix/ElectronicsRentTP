@@ -68,7 +68,7 @@ namespace BusinessLogic.Services
                     SortPriceAsc == true ? q.OrderBy(e => e.PricePerHour) :
                     SortPriceAsc == false ? q.OrderByDescending(e => e.PricePerHour) :
                     q.OrderBy(e => e.Id),
-                nameof(Equipment.Category), nameof(Equipment.reviews)
+                nameof(Equipment.Category), nameof(Equipment.reviews), nameof(Equipment.Owner)
             );
             return mapper.Map<IList<EquipmentDTO>>(items);
         }
@@ -105,10 +105,12 @@ namespace BusinessLogic.Services
         }
 
 
-        public async Task AddEquipment(Equipment equipment)
+        public async Task AddEquipment(Equipment equipment, string userId)
         {
             if (equipment == null)
                 return;
+            if(!string.IsNullOrEmpty(userId))
+                equipment.OwnerId = userId;
 
             equipment.IsAvailable = equipment.Quantity > 0;
 

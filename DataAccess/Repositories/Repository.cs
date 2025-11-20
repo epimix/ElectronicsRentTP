@@ -1,5 +1,6 @@
 ﻿using DataAccess.Data;
 using DataAccess.Data.Entities;
+using DataAccess.Data.Enum;
 using DataAccess.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -98,9 +99,18 @@ namespace DataAccess.Repositories
             context.Entry(entity).State = EntityState.Modified;
             await context.SaveChangesAsync();
         }
+
         public async Task SaveChange()
         {
             await context.SaveChangesAsync();
         }
+
+        public async Task<List<Rental>> GetExpiredActiveRentalsAsync(DateTime now)
+        {
+            return await context.Rentals
+                .Where(r => r.Status == RentalStatus.Approved && r.EndDate < now)
+                .ToListAsync();
+        }
+
     }
 }

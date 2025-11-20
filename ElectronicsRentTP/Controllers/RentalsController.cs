@@ -7,6 +7,7 @@ using ElectronicsRentTP.Models;
 using ElectronicsRentTP.Extensions;
 using BusinessLogic.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using BusinessLogic.Services;
 
 namespace ElectronicsRentTP.Controllers
 {
@@ -15,6 +16,7 @@ namespace ElectronicsRentTP.Controllers
         private readonly EquipmentRentalDbContext _ctx;
         private readonly UserManager<User> _userManager;
         private readonly IRentalService _rentalService;
+        
 
         public RentalsController(EquipmentRentalDbContext ctx, UserManager<User> userManager, IRentalService rentalService)
         {
@@ -80,6 +82,8 @@ namespace ElectronicsRentTP.Controllers
         [Authorize]
         public async Task<IActionResult> MyBookings()
         {
+            await _rentalService.AutoCompleteRentalsAsync();
+
             var userId = _userManager.GetUserId(User);
             var rentals = await _rentalService.GetUserRentalsAsync(userId!, 1);
             return View(rentals);
