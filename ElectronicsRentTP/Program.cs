@@ -1,4 +1,5 @@
-﻿using BusinessLogic;
+﻿using AutoMapper;
+using BusinessLogic;
 using BusinessLogic.Configure;
 using BusinessLogic.Interfaces;
 using BusinessLogic.Services;
@@ -6,15 +7,15 @@ using DataAccess.Data;
 using DataAccess.Data.Entities;
 using DataAccess.Repositories;
 using ElectronicsRentTP.Extensions;
+using ElectronicsRentTP.Helpers;
+using ElectronicsRentTP.Hubs;
 using ElectronicsRentTP.Interfaces;
 using ElectronicsRentTP.Services;
-using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
-using ElectronicsRentTP.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +70,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddSignalR();
+
 // -------------------- BUILD APP --------------------
 var app = builder.Build();
 
@@ -99,5 +102,6 @@ app.UseSession();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapHub<ChatHub>("/chathub");
 
 app.Run();

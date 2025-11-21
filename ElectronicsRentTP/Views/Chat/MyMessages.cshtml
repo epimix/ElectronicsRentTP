@@ -1,0 +1,66 @@
+﻿@model List<DataAccess.Data.Models.ChatListItemViewModel>
+
+<style>
+    .chat-card {
+        padding: 14px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        cursor: pointer;
+        transition: .2s;
+        background: white;
+    }
+
+        .chat-card:hover {
+            background: #f7fafc;
+        }
+
+    .avatar {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    }
+
+    .chat-text-block {
+        flex: 1;
+    }
+
+    .nickname {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 3px;
+    }
+
+    .last-msg {
+        font-size: .85rem;
+        color: #4a5568;
+    }
+
+    .equip-img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+</style>
+
+<h2>My Messages</h2>
+
+@foreach (var chat in Model)
+{
+    <a asp-controller="Chat" asp-action="Room" asp-route-chatRoomId="@chat.ChatRoomId" style="text-decoration:none; color:inherit;">
+        <div class="chat-card">
+            <img src="@chat.PartnerAvatar" class="avatar" />
+
+            <div class="chat-text-block">
+                <div class="nickname">@chat.PartnerName</div>
+                <div class="last-msg">@((chat.IsMyMessage ? "You: " : "") + chat.LastMessage)</div>
+            </div>
+
+            <img src="@chat.EquipmentImage" class="equip-img" />
+        </div>
+    </a>
+}

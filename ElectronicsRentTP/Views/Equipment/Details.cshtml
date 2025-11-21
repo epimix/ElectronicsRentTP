@@ -102,6 +102,45 @@
     .star-rating input[type="radio"]:checked + label {
         color: #fbbf24;
     }
+
+    .owner-section {
+        border-top: 1px solid #e2e8f0;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .owner-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .owner-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 999px;
+        object-fit: cover;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+
+    .owner-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #a0aec0;
+        margin-bottom: 0.15rem;
+    }
+
+    .owner-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2d3748;
+    }
 </style>
 
 <div class="equipment-details-container">
@@ -176,6 +215,44 @@
                     }
                     <a asp-controller="Favorite" asp-action="Add" asp-route-id="@Model.Id" class="btn btn-outline-primary">Add to Favorite</a>
                 </div>
+                <div class="owner-section">
+                    <div class="owner-info">
+                        @{
+                            var avatarUrl = Model.OwnerAvatarUrl
+                            ?? "https://via.placeholder.com/64?text=U";
+                            var ownerName = Model.OwnerName ?? "Unknown owner";
+                        }
+
+                        <img src="@avatarUrl"
+                             alt="@ownerName"
+                             class="owner-avatar" />
+
+                        <div>
+                            <div class="owner-label">Owner</div>
+                            <div class="owner-name">@ownerName</div>
+                        </div>
+                    </div>
+
+                    @if (ViewBag.IsAuthenticated == true && Model.OwnerId != null)
+                    {
+                        <a asp-controller="Chat"
+                           asp-action="OpenWithOwner"
+                           asp-route-equipmentId="@Model.Id"
+                           class="btn btn-outline-primary">
+                            Open chat with owner
+                        </a>
+                    }
+                    else if (Model.OwnerId != null)
+                    {
+                        <a asp-controller="Account"
+                           asp-action="Login"
+                           asp-route-returnUrl="@Url.Action("Details", "Equipment", new { id = Model.Id })"
+                           class="btn btn-outline-primary">
+                            Log in to chat
+                        </a>
+                    }
+                </div>
+
             </div>
         </div>
     </div>

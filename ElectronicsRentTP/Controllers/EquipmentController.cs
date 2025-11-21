@@ -87,6 +87,25 @@ namespace ElectronicsRentTP.Controllers
             if (equipment == null) return NotFound();
 
             var equipmentDto = mapper.Map<EquipmentDTO>(equipment);
+
+            if (!string.IsNullOrEmpty(equipment.OwnerId))
+            {
+                var owner = await ctx.Users
+                    .FirstOrDefaultAsync(u => u.Id == equipment.OwnerId);
+
+                if (owner != null)
+                {
+                    equipmentDto.OwnerId = owner.Id;
+                    equipmentDto.OwnerName =
+                        !string.IsNullOrWhiteSpace(owner.FullName)
+                            ? owner.FullName
+                            : (!string.IsNullOrWhiteSpace(owner.Login)
+                                ? owner.Login
+                                : owner.Email);
+
+                    equipmentDto.OwnerAvatarUrl = owner.profilePicture;
+                }
+            }
             var reviews = await reviewService.GetReviewsByEquipment(id);
 
             ViewBag.Reviews = reviews.OrderByDescending(r => r.CreatedAt).ToList();
