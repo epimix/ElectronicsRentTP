@@ -37,6 +37,19 @@ namespace BusinessLogic.Services
             await _userService.Update(user);
         }
 
+
+        public async Task OwnerPay(string userId, decimal amount)
+        {
+            if (userId == null)
+                throw new InvalidOperationException("User not found");
+            var user = await _userService.GetById(userId);
+            if (user == null)
+                throw new InvalidOperationException("User not found");
+
+            user.Balance += amount;
+            await _userService.Update(user);
+        }
+
         public async Task ReplenishmentBalanceAsync(string userId, decimal amount)
         {
             if (userId == null)
