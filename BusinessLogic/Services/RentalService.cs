@@ -10,11 +10,13 @@ namespace BusinessLogic.Services
     {
         private readonly IEquipmentService _equipmentService;
         private readonly IRentalRepository _rentalRepository;
+        private readonly IBalanceService _balanceService;
 
-        public RentalService(IEquipmentService equipmentService, IRentalRepository rentalRepository)
+        public RentalService(IEquipmentService equipmentService, IRentalRepository rentalRepository, IBalanceService balanceService)
         {
             _equipmentService = equipmentService;
             _rentalRepository = rentalRepository;
+            _balanceService = balanceService;
         }
 
         public async Task<CreateRentalViewModel?> InitializeRentalAsync(int equipmentId)
@@ -25,7 +27,6 @@ namespace BusinessLogic.Services
                 return null;
             if (equipment.Status is EquipmentStatus.Rented or EquipmentStatus.Reserved || !equipment.IsAvailable)
                 return null;
-
             return new CreateRentalViewModel
             {
                 EquipmentId = equipment.Id,
@@ -62,7 +63,14 @@ namespace BusinessLogic.Services
 
             var totalHours = (decimal)(model.EndDate - model.StartDate).TotalHours;
             if (totalHours <= 0) totalHours = 24m;
+
             var totalPrice = Math.Round(totalHours * equipment.PricePerHour, 2);
+
+            var userBalance = await _balanceService.GetUserBalanceAsync(userId);
+            if (userBalance < totalPrice)
+                return (false, "Insufficient balance to rent this equipment.", null);
+
+            await _balanceService.Payment(userId, totalPrice);
 
             var rental = new Rental
             {
@@ -178,15 +186,22 @@ namespace BusinessLogic.Services
                 await _rentalRepository.SaveChangesAsync();
             }
         }
-        public async Task CancelRental(int rentalId)
+        public async Task CancelRental(int id)
         {
-            var rental = await _rentalRepository.GetByIdAsync(rentalId);
-            if (rental != null)
-            {
-                rental.Status = RentalStatus.Cancelled;
-                _rentalRepository.Update(rental);
-                await _rentalRepository.SaveChangesAsync();
-            }
+            var rental = await _rentalRepository.GetByIdAsync(id);
+            if (rental == null)
+                throw new InvalidOperationException("Rental not found");
+
+            if (rental.Status != RentalStatus.Pending)
+                throw new InvalidOperationException("Only pending rentals can be cancelled.");
+
+            rental.Status = RentalStatus.Cancelled;
+            _rentalRepository.Update(rental);
+
+            await _balanceService.ReplenishmentBalanceAsync(rental.UserId, rental.TotalPrice);
+
+            var saved = await _rentalRepository.SaveChangesAsync();
+  
         }
         public async Task<IList<RentalDetailsViewModel>> GetNotConfirmRental(string userId)
         {
@@ -216,9 +231,9 @@ namespace BusinessLogic.Services
             {
                 rental.Status = RentalStatus.Rejected;
                 _rentalRepository.Update(rental);
+                await _balanceService.ReplenishmentBalanceAsync(rental.UserId, rental.TotalPrice);
                 await _rentalRepository.SaveChangesAsync();
             }
-
         }
 
         public async Task AutoCompleteRentalsAsync()

@@ -44,7 +44,7 @@ builder.Services.AddScoped<IRentalService, RentalService>();
 builder.Services.AddScoped<IRentalRepository, RentalRepository>();
 builder.Services.AddScoped<IAdvertsService, AdvertsService>();
 builder.Services.AddScoped<ICartService, CartService>();
-
+builder.Services.AddScoped<IBalanceService, BalanceService>();
 
 // -------------------- JWT OPTIONS --------------------
 
