@@ -22,6 +22,9 @@ namespace DataAccess.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; } = default!;
         public DbSet<CartEntity> CartEntities { get; set; }
 
+        public DbSet<ChatRoom> ChatRooms { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -59,6 +62,36 @@ namespace DataAccess.Data
                 .WithMany(u => u.MyAdverts)
                 .HasForeignKey(e => e.OwnerId)
                 .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ChatRoom>()
+                .HasOne(cr => cr.Equipment)
+                .WithMany() // без навігаційного property в Rental
+                .HasForeignKey(cr => cr.EquipmentId)
+                .OnDelete(DeleteBehavior.Cascade);        // якщо видаляємо Rental, видаляємо і чат
+
+            modelBuilder.Entity<ChatRoom>()
+                .HasOne(cr => cr.Owner)
+                .WithMany()                               // без навігаційної колекції в User
+                .HasForeignKey(cr => cr.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ChatRoom>()
+                .HasOne(cr => cr.Renter)
+                .WithMany()
+                .HasForeignKey(cr => cr.RenterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(cm => cm.ChatRoom)
+                .WithMany(cr => cr.Messages)
+                .HasForeignKey(cm => cm.ChatRoomId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(cm => cm.Sender)
+                .WithMany()                               // знову без колекції в User
+                .HasForeignKey(cm => cm.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Decimal types

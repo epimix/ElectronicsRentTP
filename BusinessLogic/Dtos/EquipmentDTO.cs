@@ -19,5 +19,9 @@ namespace BusinessLogic.Dtos
         public int Quantity { get; set; }
         public string? ImageUrl { get; set; }
 
+        public string? OwnerId { get; set; }
+        public string? OwnerName { get; set; }
+        public string? OwnerAvatarUrl { get; set; }
+
     }
 }

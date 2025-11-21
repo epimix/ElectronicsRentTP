@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(EquipmentRentalDbContext))]
-    partial class EquipmentRentalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251121175026_AddChatEntities")]
+    partial class AddChatEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,12 +97,12 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("EquipmentId")
-                        .HasColumnType("int");
-
                     b.Property<string>("OwnerId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("RentalId")
+                        .HasColumnType("int");
 
                     b.Property<string>("RenterId")
                         .IsRequired()
@@ -107,9 +110,9 @@ namespace DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EquipmentId");
-
                     b.HasIndex("OwnerId");
+
+                    b.HasIndex("RentalId");
 
                     b.HasIndex("RenterId");
 
@@ -802,7 +805,7 @@ namespace DataAccess.Migrations
                             Id = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             AccessFailedCount = 0,
                             Balance = 0m,
-                            ConcurrencyStamp = "a0d26f82-6047-432b-b801-620e70979b7d",
+                            ConcurrencyStamp = "81a45d3d-62ae-4ff4-915c-a2cccfc43637",
                             Email = "admin9@gmail.com",
                             EmailConfirmed = true,
                             FullName = "Андрій Дячук",
@@ -810,9 +813,9 @@ namespace DataAccess.Migrations
                             Login = "Андрій Дячук",
                             NormalizedEmail = "ADMIN9@GMAIL.COM",
                             NormalizedUserName = "ADMIN9@GMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPMSgQElR5arqFtEFOQ1cuJaYttKDsg1wKvYFKjkgpCm3znCodBoufpDwlMrRFZzGQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKBEjgyp0xz2vQ+qEToIsRw4rUz7DKUA9FoRedUICK6qyvLKkFhldelBHepQd1FH1w==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "5e54537a-9bb3-432e-aa9d-7a35be6bef6e",
+                            SecurityStamp = "bba7e6b9-f5b5-4fd7-ac74-f92041083249",
                             TwoFactorEnabled = false,
                             UserName = "admin9@gmail.com"
                         });
@@ -991,16 +994,16 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("DataAccess.Data.Entities.ChatRoom", b =>
                 {
-                    b.HasOne("DataAccess.Data.Entities.Equipment", "Equipment")
-                        .WithMany()
-                        .HasForeignKey("EquipmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("DataAccess.Data.Entities.User", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Data.Entities.Rental", "Rental")
+                        .WithMany()
+                        .HasForeignKey("RentalId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DataAccess.Data.Entities.User", "Renter")
@@ -1009,9 +1012,9 @@ namespace DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Equipment");
-
                     b.Navigation("Owner");
+
+                    b.Navigation("Rental");
 
                     b.Navigation("Renter");
                 });

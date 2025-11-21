@@ -1,0 +1,199 @@
+﻿@model DataAccess.Data.Entities.ChatRoom
+
+@{
+    ViewData["Title"] = "Chat";
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value;
+}
+
+<style>
+
+    .chat-wrapper {
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #ffffff;
+    }
+
+    .chat-header {
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+
+    .chat-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .chat-messages {
+        height: 450px;
+        overflow-y: auto;
+        padding: 10px;
+        background: #f7fafc;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        scroll-behavior: smooth;
+    }
+
+    .message {
+        max-width: 75%;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        line-height: 1.3rem;
+        display: inline-block;
+        word-wrap: break-word;
+    }
+
+        .message.mine {
+            align-self: flex-end;
+            background: #3182ce;
+            color: white;
+            border-bottom-right-radius: 3px;
+        }
+
+        .message.theirs {
+            align-self: flex-start;
+            background: #e2e8f0;
+            color: #1a202c;
+            border-bottom-left-radius: 3px;
+        }
+
+    .message-time {
+        display: block;
+        font-size: 0.75rem;
+        margin-top: 4px;
+        opacity: 0.7;
+    }
+
+    .chat-input-area {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+    }
+
+    #messageInput {
+        flex-grow: 1;
+    }
+
+</style>
+
+<div class="chat-wrapper">
+
+    <div class="chat-header">
+        <div class="chat-title">
+            Chat with @(userId == Model.OwnerId ? Model.Renter.FullName : Model.Owner.FullName)
+        </div>
+        <div style="font-size: 0.85rem; color: #718096;">
+            Equipment: @Model.Equipment.Name
+        </div>
+    </div>
+    @{
+        var partner = Model.OwnerId == userId ? Model.Renter : Model.Owner;
+    }
+
+    <div style="display:flex; align-items:center; gap:15px; padding:10px; border-bottom:1px solid #e2e8f0; background:white;">
+        <img src="@Model.Equipment.ImageUrl" style="width:70px; height:70px; border-radius:6px; object-fit:cover;" />
+
+        <div style="flex:1;">
+            <div style="font-size:1.1rem; font-weight:600;">@Model.Equipment.Name</div>
+            <a asp-controller="Equipment" asp-action="Details" asp-route-id="@Model.EquipmentId" style="font-size:.85rem;">
+                View listing →
+            </a>
+        </div>
+
+        <div style="text-align:center;">
+            <img src="@(partner.profilePicture ?? "https://cdn-icons-png.flaticon.com/512/149/149071.png")"
+                 style="width:60px; height:60px; border-radius:999px; object-fit:cover;" />
+            <div>@(partner.FullName ?? partner.Email)</div>
+        </div>
+    </div>
+
+    <div id="messagesList" class="chat-messages">
+        @foreach (var msg in Model.Messages.OrderBy(m => m.SentAt))
+        {
+            var mine = msg.SenderId == userId;
+
+            <div style="display:flex; gap:10px; align-items:flex-start; @(mine ? "flex-direction:row-reverse;" : "")">
+                <img src="@(msg.Sender.profilePicture ?? "https://cdn-icons-png.flaticon.com/512/149/149071.png")"
+                     style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
+
+                <div class="message @(mine ? "mine" : "theirs")">
+                    <strong>@(msg.Sender.FullName ?? msg.Sender.Email)</strong><br />
+                    @msg.Text
+                    <span class="message-time">@msg.SentAt.ToLocalTime().ToString("HH:mm")</span>
+                </div>
+            </div>
+
+        }
+    </div>
+
+    <div class="chat-input-area">
+        <input type="text" id="messageInput" class="form-control" placeholder="Type a message..." />
+        <button id="sendButton" class="btn btn-primary">Send</button>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+    <script>
+        const chatRoomId = @Model.Id;
+        const userId = "@userId";
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chathub")
+            .withAutomaticReconnect()
+            .build();
+
+        function scrollToBottom() {
+            const box = document.getElementById("messagesList");
+            box.scrollTop = box.scrollHeight;
+        }
+
+        connection.on("ReceiveMessage", function (message) {
+            const messagesList = document.getElementById("messagesList");
+            const div = document.createElement("div");
+
+            const mine = message.senderId === userId;
+
+            div.className = "message " + (mine ? "mine" : "theirs");
+            div.innerHTML = message.text +
+                `<span class='message-time'>${message.sentAt.slice(11, 16)}</span>`;
+
+            messagesList.appendChild(div);
+
+            scrollToBottom();
+        });
+
+        connection.start().then(function () {
+            connection.invoke("JoinRoom", chatRoomId);
+            scrollToBottom();
+        }).catch(err => console.error(err));
+
+        document.getElementById("sendButton").addEventListener("click", sendMessage);
+
+        document.getElementById("messageInput").addEventListener("keyup", function (e) {
+            if (e.key === "Enter") {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const text = document.getElementById("messageInput").value.trim();
+            if (text.length === 0) return;
+
+            connection.invoke("SendMessage", chatRoomId, text)
+                .catch(err => console.error(err));
+
+            document.getElementById("messageInput").value = "";
+        }
+    </script>
+}
