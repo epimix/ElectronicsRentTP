@@ -29,7 +29,7 @@ namespace ElectronicsRentTP.Controllers
                 .Include(c => c.Owner)
                 .Include(c => c.Renter)
                 .Include(c => c.Messages)
-                .Where(c => c.OwnerId == userId || c.RenterId == userId)
+                .Where(c => !c.IsDeleted && (c.OwnerId == userId || c.RenterId == userId))
                 .ToListAsync();
 
             var vm = chats.Select(c =>
@@ -56,14 +56,16 @@ namespace ElectronicsRentTP.Controllers
                     LastMessageTime = lastMsg?.SentAt,
                     IsMyMessage = lastMsg?.SenderId == userId
                 };
-            }).OrderByDescending(c => c.LastMessageTime).ToList();
+            }).OrderByDescending(c => c.IsPinned)
+    .ThenByDescending(c => c.LastMessageTime)
+    .ToList();
 
             return View(vm);
         }
 
 
 
-        // Викликається з картки товару
+
         [HttpGet]
         public async Task<IActionResult> OpenWithOwner(int equipmentId)
         {
@@ -76,14 +78,14 @@ namespace ElectronicsRentTP.Controllers
             if (equipment == null)
                 return NotFound();
 
-            // Не даємо власнику відкривати чат сам з собою
+
             if (equipment.OwnerId == userId)
             {
-                // можеш просто повернутись на Details або показати повідомлення
+
                 return RedirectToAction("Details", "Equipment", new { id = equipmentId });
             }
 
-            // Шукаємо існуючий чат між цим юзером і власником по цьому товару
+
             var chatRoom = await _context.ChatRooms
                 .FirstOrDefaultAsync(cr =>
                     cr.EquipmentId == equipmentId &&
@@ -103,7 +105,7 @@ namespace ElectronicsRentTP.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Перекидаємо на сторінку чату (Room)
+
             return RedirectToAction("Room", new { chatRoomId = chatRoom.Id });
         }
 
@@ -122,8 +124,68 @@ namespace ElectronicsRentTP.Controllers
             if (chatRoom == null)
                 return NotFound();
 
-            // Тут уже віддаєш свій ViewModel з повідомленнями й т.д.
-            return View(chatRoom); // або ChatRoomViewModel
+
+            return View(chatRoom);
         }
+        [Authorize]
+        public async Task<IActionResult> Pin(int chatRoomId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var chat = await _context.ChatRooms
+                .FirstOrDefaultAsync(c => c.Id == chatRoomId);
+
+            if (chat == null)
+                return NotFound();
+
+            if (chat.OwnerId != userId && chat.RenterId != userId)
+                return Forbid();
+
+            chat.IsPinned = true;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("MyMessages");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Unpin(int chatRoomId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var chat = await _context.ChatRooms
+                .FirstOrDefaultAsync(c => c.Id == chatRoomId);
+
+            if (chat == null)
+                return NotFound();
+
+            if (chat.OwnerId != userId && chat.RenterId != userId)
+                return Forbid();
+
+            chat.IsPinned = false;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("MyMessages");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Delete(int chatRoomId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var chat = await _context.ChatRooms
+                .FirstOrDefaultAsync(c => c.Id == chatRoomId);
+
+            if (chat == null)
+                return NotFound();
+
+            if (chat.OwnerId != userId && chat.RenterId != userId)
+                return Forbid();
+
+            chat.IsDeleted = true;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("MyMessages");
+        }
+
     }
 }

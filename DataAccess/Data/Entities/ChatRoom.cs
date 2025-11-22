@@ -13,6 +13,9 @@
         public string RenterId { get; set; } = null!;
         public User Renter { get; set; }
 
+        public bool IsPinned { get; set; } = false;
+        public bool IsDeleted { get; set; } = false;
+
         public ICollection<ChatMessage> Messages { get; set; } = new List<ChatMessage>();
     }
 }
