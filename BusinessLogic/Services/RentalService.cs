@@ -201,7 +201,7 @@ namespace BusinessLogic.Services
             await _balanceService.ReplenishmentBalanceAsync(rental.UserId, rental.TotalPrice);
 
             var saved = await _rentalRepository.SaveChangesAsync();
-  
+
         }
         public async Task<IList<RentalDetailsViewModel>> GetNotConfirmRental(string userId)
         {
@@ -249,6 +249,32 @@ namespace BusinessLogic.Services
             }
             if (rentals.Count > 0)
                 await _rentalRepository.SaveChangesAsync();
+        }
+        public async Task<IList<RentalDetailsViewModel>> GetRentalByStatus(string userId, RentalStatus status, int page, int pageSize = 10)
+
+        {
+            var rentals = await _rentalRepository.GetRentalsByStatusAsync(userId, status, page, pageSize);
+
+            return rentals.Select(r => new RentalDetailsViewModel
+            {
+                Id = r.Id,
+                EquipmentId = r.EquipmentId,
+                EquipmentName = r.Equipment?.Name ?? "—",
+                StartDate = r.StartDate,
+                EndDate = r.EndDate,
+                Status = r.Status,
+                TotalPrice = r.TotalPrice,
+                UserEmail = r.User?.Email,
+                OwnerEmail = r.Owner?.Email,
+                Description = r.Description,
+                PaymentType = r.PaymentType,
+                EquipmentImageUrl = r.Equipment?.ImageUrl
+            }).ToList();
+
+        }
+        public async Task<int> GetRentalCountByStatus(string userId, RentalStatus? status, int page, int pageSize = 10)
+        {
+            return await _rentalRepository.GetRentalCountByStatus(userId, status, page, pageSize);
         }
 
     }

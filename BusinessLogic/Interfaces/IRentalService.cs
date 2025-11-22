@@ -1,4 +1,5 @@
 ﻿using DataAccess.Data.Entities;
+using DataAccess.Data.Enum;
 using ElectronicsRentTP.Models;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace BusinessLogic.Interfaces
 
         Task AutoCompleteRentalsAsync(); // Автоматичне завершення оренд
         Task<IList<RentalDetailsViewModel>> GetNotConfirmRental(string userId);
-
+        Task<IList<RentalDetailsViewModel>> GetRentalByStatus(string userId, RentalStatus status, int page, int pageSize = 10);
+        Task<int> GetRentalCountByStatus(string userId, RentalStatus? status, int page, int pageSize = 10);
     }
 }
