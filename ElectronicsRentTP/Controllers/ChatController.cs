@@ -69,6 +69,10 @@ namespace ElectronicsRentTP.Controllers
         [HttpGet]
         public async Task<IActionResult> OpenWithOwner(int equipmentId)
         {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var equipment = await _context.Equipments
@@ -112,6 +116,10 @@ namespace ElectronicsRentTP.Controllers
         [HttpGet]
         public async Task<IActionResult> Room(int chatRoomId)
         {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             var chatRoom = await _context.ChatRooms
                 .Include(cr => cr.Equipment)
                 .Include(cr => cr.Owner)

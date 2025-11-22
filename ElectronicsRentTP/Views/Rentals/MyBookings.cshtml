@@ -2,6 +2,7 @@
 @model IEnumerable<RentalListItemViewModel>
 @{
     ViewData["Title"] = "My Bookings";
+    var currentStatus = ViewBag.CurrentStatus as RentalStatus?;
 }
 
 <style>
@@ -42,11 +43,69 @@
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
 
-    .btn-new-booking:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-        color: white;
+        .btn-new-booking:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            color: white;
+        }
+
+    .status-filter {
+        background: white;
+        border-radius: 16px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow-x: auto;
     }
+
+    .filter-tabs {
+        display: flex;
+        justify-content: space-between; /* ← рівний розподіл */
+        flex-wrap: wrap; /* ← щоб переносились при потребі */
+        gap: 0.75rem;
+        width: 100%;
+    }
+
+    .filter-tab {
+        background: #f7fafc;
+        color: #718096;
+        border: 2px solid transparent;
+        padding: 0.875rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+        .filter-tab:hover {
+            background: #e2e8f0;
+            color: #2d3748;
+            transform: translateY(-2px);
+        }
+
+        .filter-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-tab .count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.625rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        .filter-tab.active .count {
+            background: rgba(255, 255, 255, 0.3);
+        }
 
     .bookings-grid {
         display: grid;
@@ -62,11 +121,11 @@
         border: 2px solid transparent;
     }
 
-    .booking-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        border-color: #667eea;
-    }
+        .booking-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            border-color: #667eea;
+        }
 
     .booking-header {
         display: flex;
@@ -157,6 +216,7 @@
         margin-top: 1rem;
         padding-top: 1rem;
         border-top: 2px solid #f7fafc;
+        flex-wrap: wrap;
     }
 
     .btn-details {
@@ -171,11 +231,31 @@
         font-size: 0.875rem;
     }
 
-    .btn-details:hover {
-        color: white;
-        transform: translateX(4px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        .btn-details:hover {
+            color: white;
+            transform: translateX(4px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+    .btn-cancel-booking {
+        background: white;
+        color: #ef4444;
+        border: 2px solid #ef4444;
+        padding: 0.625rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.875rem;
+        cursor: pointer;
     }
+
+        .btn-cancel-booking:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
 
     .empty-state {
         text-align: center;
@@ -188,6 +268,17 @@
     .empty-icon {
         font-size: 4rem;
         margin-bottom: 1rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
     }
 
     .empty-title {
@@ -202,7 +293,27 @@
         margin-bottom: 2rem;
     }
 
+    @@media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
 
+        .btn-new-booking {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .filter-tabs {
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .filter-tab {
+            font-size: 0.875rem;
+            padding: 0.75rem 1.25rem;
+        }
+    }
 </style>
 
 <div class="bookings-container">
@@ -212,6 +323,52 @@
             <span>➕</span>
             <span>New Booking</span>
         </a>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="status-filter">
+        <div class="filter-tabs">
+
+            <a asp-action="MyBookings"
+               asp-route-status="@RentalStatus.Pending"
+               class="filter-tab @(currentStatus == RentalStatus.Pending ? "active" : "")">
+                <span>⏳</span>
+                <span>Pending</span>
+                <span class="count">@ViewBag.PendingCount</span>
+            </a>
+
+            <a asp-action="MyBookings"
+               asp-route-status="@RentalStatus.Approved"
+               class="filter-tab @(currentStatus == RentalStatus.Approved ? "active" : "")">
+                <span>✅</span>
+                <span>Approved</span>
+                <span class="count">@ViewBag.ApprovedCount</span>
+            </a>
+
+            <a asp-action="MyBookings"
+               asp-route-status="@RentalStatus.Completed"
+               class="filter-tab @(currentStatus == RentalStatus.Completed ? "active" : "")">
+                <span>✔️</span>
+                <span>Completed</span>
+                <span class="count">@ViewBag.CompletedCount</span>
+            </a>
+
+            <a asp-action="MyBookings"
+               asp-route-status="@RentalStatus.Rejected"
+               class="filter-tab @(currentStatus == RentalStatus.Rejected ? "active" : "")">
+                <span>⛔</span>
+                <span>Rejected</span>
+                <span class="count">@ViewBag.RejectedCount</span>
+            </a>
+
+            <a asp-action="MyBookings"
+               asp-route-status="@RentalStatus.Cancelled"
+               class="filter-tab @(currentStatus == RentalStatus.Cancelled ? "active" : "")">
+                <span>❌</span>
+                <span>Cancelled</span>
+                <span class="count">@ViewBag.CancelledCount</span>
+            </a>
+        </div>
     </div>
 
     @if (Model.Any())
@@ -251,7 +408,7 @@
 
                         <div class="detail-item">
                             <span class="detail-label">💰 Total Price</span>
-                            <span class="detail-value price-value">@item.TotalPrice.ToString("0.00") $</span>
+                            <span class="detail-value price-value">$@item.TotalPrice.ToString("0.00")</span>
                         </div>
 
                         <div class="detail-item">
@@ -275,8 +432,22 @@
 
                     <div class="booking-actions">
                         <a asp-action="Details" asp-route-id="@item.Id" class="btn-details">
+                            <i class="bi bi-eye"></i>
                             View Details →
                         </a>
+
+                        @if (item.Status == RentalStatus.Pending)
+                        {
+                            <form asp-action="Cancel" asp-route-id="@item.Id" method="post" style="margin: 0;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="btn-cancel-booking"
+                                        onclick="return confirm('Are you sure you want to cancel this booking? The amount will be refunded to your balance.')">
+                                    <i class="bi bi-x-circle"></i>
+                                    Cancel Booking
+                                </button>
+                            </form>
+                        }
                     </div>
                 </div>
             }
@@ -285,9 +456,53 @@
     else
     {
         <div class="empty-state">
-            <div class="empty-icon">📭</div>
-            <h3 class="empty-title">No Bookings Yet</h3>
-            <p class="empty-text">You haven't made any equipment bookings. Start by booking your first equipment!</p>
+            <div class="empty-icon">
+                @if (currentStatus == null)
+                {
+                    <span>📭</span>
+                }
+                else
+                {
+                    @switch (currentStatus)
+                    {
+                        case RentalStatus.Pending:
+                            <span>⏳</span>
+                            break;
+                        case RentalStatus.Approved:
+                            <span>✅</span>
+                            break;
+                        case RentalStatus.Completed:
+                            <span>✔️</span>
+                            break;
+                        case RentalStatus.Rejected:
+                            <span>⛔</span>
+                            break;
+                        case RentalStatus.Cancelled:
+                            <span>❌</span>
+                            break;
+                    }
+                }
+            </div>
+            <h3 class="empty-title">
+                @if (currentStatus == null)
+                {
+                    <text>No Bookings Yet</text>
+                }
+                else
+                {
+                    <text>No @currentStatus.ToString() Bookings</text>
+                }
+            </h3>
+            <p class="empty-text">
+                @if (currentStatus == null)
+                {
+                    <text>You haven't made any equipment bookings. Start by booking your first equipment!</text>
+                }
+                else
+                {
+                    <text>You don't have any @currentStatus.ToString().ToLower() bookings at the moment.</text>
+                }
+            </p>
             <a asp-controller="Equipment" asp-action="Index" class="btn-new-booking">
                 <span>🔍</span>
                 <span>Browse Equipment</span>

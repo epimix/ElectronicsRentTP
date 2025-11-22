@@ -1,0 +1,55 @@
+# Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Build directories
+bin/
+obj/
+
+# Publish output
+/dist/
+out/
+artifacts/
+
+# ASP.NET Core logs
+logs/
+*.log
+
+# Configuration secrets
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.json
+
+# Sensitive files
+*.pfx
+*.key
+*.cer
+
+# Database (if local)
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache & temp
+*.cache
+*.tmp
+*.temp
+*.pid
+
+# Rider / JetBrains
+.idea/
+*.iml
+
+# Node (if used in your project)
+node_modules/
+
+# Files uploaded by users
+wwwroot/uploads/
+wwwroot/profile_pictures/
+wwwroot/avatars/
+wwwroot/images/user_content/
+
+# System files
+Thumbs.db
+.DS_Store

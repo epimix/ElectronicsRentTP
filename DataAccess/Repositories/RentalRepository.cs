@@ -99,5 +99,26 @@ namespace DataAccess.Repositories
                 .Where(r => r.Status == RentalStatus.Approved && r.EndDate < now)
                 .ToListAsync();
         }
+        public async Task<List<Rental>> GetRentalsByStatusAsync(string userId, RentalStatus status, int page, int pageSize = 10)
+        {
+            return await _ctx.Rentals
+                .AsNoTracking()
+                .Where(r => r.UserId == userId && r.Status == status)
+                .Include(r => r.Equipment)
+                .Include(r => r.User)
+                .Include(r => r.Owner)
+                .OrderByDescending(r => r.StartDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+        }
+       public async Task<int> GetRentalCountByStatus(string userId, RentalStatus? status, int page, int pageSize = 10) 
+       {
+            return await _ctx.Rentals
+               .AsNoTracking()
+               .Where(r => r.UserId == userId && (status == null || r.Status == status))
+               .CountAsync();
+        }
     }
 }
