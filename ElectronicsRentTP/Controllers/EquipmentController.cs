@@ -41,6 +41,8 @@ namespace ElectronicsRentTP.Controllers
         }
         //[Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Index(
+
+
             int page = 1,
             int? categoryId = null,
             string? searchName = null,
@@ -49,6 +51,10 @@ namespace ElectronicsRentTP.Controllers
             bool? isAvailable = null,
             bool? sortPriceAsc = null)
         {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             const int pageSize = 10;
             var models = await eq.GetAll(categoryId, searchName, null, minPrice, maxPrice, sortPriceAsc, isAvailable, page);
             var totalCount = await eq.GetTotalCount(categoryId, searchName, null, minPrice, maxPrice, isAvailable);
@@ -83,6 +89,10 @@ namespace ElectronicsRentTP.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             var equipment = await eq.GetById(id);
             if (equipment == null) return NotFound();
 
@@ -118,6 +128,10 @@ namespace ElectronicsRentTP.Controllers
         [HttpPost]
         public async Task<IActionResult> AddReview(int equipmentId, int rating, string comment)
         {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             if (!User.Identity?.IsAuthenticated ?? true)
             {
                 return RedirectToAction("Login", "Account");
@@ -181,6 +195,10 @@ namespace ElectronicsRentTP.Controllers
         //[Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Edit(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             var equipment = await eq.GetById(id);
             if (equipment == null) return NotFound();
 
@@ -208,6 +226,10 @@ namespace ElectronicsRentTP.Controllers
         //[Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Delete(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             await eq.DeleteEquipment(id);
             TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment deleted successfully!"));
 

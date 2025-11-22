@@ -181,6 +181,7 @@ namespace BusinessLogic.Services
             var rental = await _rentalRepository.GetByIdAsync(rentalId);
             if (rental != null)
             {
+                await _balanceService.OwnerPay(rental.OwnerId, rental.TotalPrice);
                 rental.Status = RentalStatus.Approved;
                 _rentalRepository.Update(rental);
                 await _rentalRepository.SaveChangesAsync();

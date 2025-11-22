@@ -10,6 +10,8 @@ namespace BusinessLogic.Interfaces
     {
         Task<decimal> GetUserBalanceAsync(string userId);
         Task ReplenishmentBalanceAsync(string userId, decimal amount);
+
+        Task OwnerPay(string userId, decimal amount);
         Task Payment(string userId, decimal amount);
     }
 }
