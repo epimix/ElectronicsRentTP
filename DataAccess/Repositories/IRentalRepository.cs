@@ -1,4 +1,5 @@
 ﻿using DataAccess.Data.Entities;
+using DataAccess.Data.Enum;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,9 @@ namespace DataAccess.Repositories
         Task<bool> SaveChangesAsync();
         Task<List<Rental>> GetNotConfirmedRentalsAsync(string ownerId);
         Task<List<Rental>> GetExpiredActiveRentalsAsync(DateTime now); // для автоматичного завершення оренд
+        Task<List<Rental>> GetRentalsByStatusAsync(string userId, RentalStatus status, int page, int pageSize = 10);
+
+        Task<int> GetRentalCountByStatus(string userId, RentalStatus? status, int page, int pageSize = 10);
 
     }
 }

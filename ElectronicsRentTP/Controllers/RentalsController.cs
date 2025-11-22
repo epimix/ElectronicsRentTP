@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DataAccess.Data;
 using DataAccess.Data.Entities;
+using DataAccess.Data.Enum;
 using ElectronicsRentTP.Models;
 using ElectronicsRentTP.Extensions;
 using BusinessLogic.Interfaces;
@@ -13,17 +14,15 @@ namespace ElectronicsRentTP.Controllers
 {
     public class RentalsController : Controller
     {
-        private readonly EquipmentRentalDbContext _ctx;
         private readonly UserManager<User> _userManager;
         private readonly IRentalService _rentalService;
-        
 
-        public RentalsController(EquipmentRentalDbContext ctx, UserManager<User> userManager, IRentalService rentalService)
+        public RentalsController(UserManager<User> userManager, IRentalService rentalService)
         {
-            _ctx = ctx;
             _userManager = userManager;
             _rentalService = rentalService;
         }
+
         [Authorize]
         public async Task<IActionResult> Create(int equipmentId)
         {
@@ -80,12 +79,37 @@ namespace ElectronicsRentTP.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> MyBookings()
+        public async Task<IActionResult> MyBookings(RentalStatus? status, int page = 1, int pageSize = 10)
         {
             await _rentalService.AutoCompleteRentalsAsync();
 
             var userId = _userManager.GetUserId(User);
-            var rentals = await _rentalService.GetUserRentalsAsync(userId!, 1);
+
+            IEnumerable<RentalListItemViewModel> rentals;
+
+            var targetStatus = status ?? RentalStatus.Pending;
+
+            var detailedRentals = await _rentalService.GetRentalByStatus(userId!, targetStatus, page, pageSize);
+
+            rentals = detailedRentals.Select(r => new RentalListItemViewModel
+            {
+                Id = r.Id,
+                EquipmentId = r.EquipmentId,
+                EquipmentName = r.EquipmentName,
+                StartDate = r.StartDate,
+                EndDate = r.EndDate,
+                Status = r.Status,
+                TotalPrice = r.TotalPrice
+            }).ToList();
+
+            ViewBag.CurrentStatus = status;
+            ViewBag.AllCount = await _rentalService.GetRentalCountByStatus(userId!, null, 1, 1000);
+            ViewBag.PendingCount = await _rentalService.GetRentalCountByStatus(userId!, RentalStatus.Pending, 1, 1000);
+            ViewBag.ApprovedCount = await _rentalService.GetRentalCountByStatus(userId!, RentalStatus.Approved, 1, 1000);
+            ViewBag.CompletedCount = await _rentalService.GetRentalCountByStatus(userId!, RentalStatus.Completed, 1, 1000);
+            ViewBag.RejectedCount = await _rentalService.GetRentalCountByStatus(userId!, RentalStatus.Rejected, 1, 1000);
+            ViewBag.CancelledCount = await _rentalService.GetRentalCountByStatus(userId!, RentalStatus.Cancelled, 1, 1000);
+
             return View(rentals);
         }
 
@@ -105,11 +129,26 @@ namespace ElectronicsRentTP.Controllers
         }
 
         [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Cancel(int id)
         {
             var userId = _userManager.GetUserId(User);
-            var Task = await _rentalService.DeleteRentalAsync(id, userId!);
-            var rentals = await _rentalService.GetUserRentalsAsync(userId!, 1);
+
+            try
+            {
+                await _rentalService.CancelRental(id);
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Booking cancelled successfully. Amount refunded to your balance.", ToastType.success));
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData.Set(WebConstants.ToastMessage, new ToastModel(ex.Message, ToastType.danger));
+            }
+            catch (Exception ex)
+            {
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Error cancelling booking.", ToastType.danger));
+            }
+
             return RedirectToAction("MyBookings");
         }
     }
