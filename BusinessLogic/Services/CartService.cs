@@ -1,6 +1,8 @@
 ﻿using BusinessLogic.Interfaces;
 using DataAccess.Data.Entities;
 using DataAccess.Repositories;
+using DataAccess.Data;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,12 +16,14 @@ namespace BusinessLogic.Services
         private readonly IRepository<Equipment> equipmentRepo;
         private readonly IUserServices userService;
         private readonly IRepository<CartEntity> repo;
+        private readonly EquipmentRentalDbContext ctx;
 
-        public CartService(IRepository<Equipment> equipmentRepo, IUserServices userService, IRepository<CartEntity> repo)
+        public CartService(IRepository<Equipment> equipmentRepo, IUserServices userService, IRepository<CartEntity> repo, EquipmentRentalDbContext ctx)
         {
             this.equipmentRepo = equipmentRepo;
             this.userService = userService;
             this.repo = repo;
+            this.ctx = ctx;
         }
         public async Task AddToCart(string userId, int equipmentId, int quantity)
         {
@@ -122,20 +126,21 @@ namespace BusinessLogic.Services
                 // Збільшуємо кількість - перевіряємо наявність
                 if (equipment.Quantity < quantityDifference)
                     throw new InvalidOperationException($"Not enough quantity available. Only {equipment.Quantity} items in stock.");
-                
-                equipment.Quantity -= quantityDifference;
             }
-            else if (quantityDifference < 0)
+
+            // Використовуємо SQL для оновлення без Entity Framework Update
+            var newTotalPrice = equipment.PricePerHour * newQuantity;
+            await ctx.Database.ExecuteSqlRawAsync(
+                "UPDATE CartEntities SET Quantity = {0}, TotalPrice = {1} WHERE UserId = {2} AND EquipmentId = {3}",
+                newQuantity, newTotalPrice, userId, equipmentId);
+            
+            // Оновлюємо кількість товару через SQL (віднімаємо різницю)
+            if (quantityDifference != 0)
             {
-                // Зменшуємо кількість - повертаємо товар
-                equipment.Quantity += Math.Abs(quantityDifference);
+                await ctx.Database.ExecuteSqlRawAsync(
+                    "UPDATE Equipments SET Quantity = Quantity - {0} WHERE Id = {1}",
+                    quantityDifference, equipmentId);
             }
-
-            cartItem.Quantity = newQuantity;
-            cartItem.TotalPrice = equipment.PricePerHour * newQuantity;
-
-            await equipmentRepo.UpdateAsync(equipment);
-            await userService.Update(user);
         }
     }
 }

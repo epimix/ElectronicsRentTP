@@ -79,10 +79,30 @@
                             </div>
                         </div>
 
+                        <div class="row g-3 mb-3">
+                            <div class="col-12">
+                                <h5 class="mb-3">Quick Actions</h5>
+                                <div class="d-grid gap-2">
+                                    <a class="btn btn-outline-primary" asp-controller="Adverts" asp-action="Index" style="border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 600; transition: all 0.3s ease; border: 2px solid #667eea; color: #667eea;">
+                                        <i class="bi bi-megaphone me-2"></i> My Adverts
+                                    </a>
+                                    <a class="btn btn-outline-primary" asp-controller="Rentals" asp-action="MyBookings" style="border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 600; transition: all 0.3s ease; border: 2px solid #667eea; color: #667eea;">
+                                        <i class="bi bi-journal-text me-2"></i> My Bookings
+                                    </a>
+                                    <a class="btn btn-outline-primary" asp-controller="OwnerRentals" asp-action="Index" style="border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 600; transition: all 0.3s ease; border: 2px solid #667eea; color: #667eea;">
+                                        <i class="bi bi-clipboard-check me-2"></i> Rental Requests
+                                    </a>
+                                    <a class="btn btn-outline-primary" asp-controller="Balance" asp-action="Index" style="border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 600; transition: all 0.3s ease; border: 2px solid #667eea; color: #667eea;">
+                                        <i class="bi bi-wallet2 me-2"></i> Balance
+                                    </a>
+                                    <a class="btn btn-outline-primary" asp-controller="Cart" asp-action="Index" style="border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 600; transition: all 0.3s ease; border: 2px solid #667eea; color: #667eea;">
+                                        <i class="bi bi-cart me-2"></i> Shopping Cart
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-between flex-wrap gap-2">
-                            <a class="btn btn-outline-primary" asp-controller="Rentals" asp-action="MyBookings">
-                                <i class="bi bi-journal-text me-1"></i> My bookings
-                            </a>
                             <form asp-controller="Account" asp-action="Logout" method="post">
                                 <button type="submit" class="btn btn-danger">
                                     <i class="bi bi-box-arrow-right me-1"></i> Sign out
@@ -93,5 +113,5 @@
                 </div>
             }
         </div>
-    }
+    </div>
 </div>

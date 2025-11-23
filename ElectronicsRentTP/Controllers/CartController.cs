@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ElectronicsRentTP.Extensions;
 using ElectronicsRentTP.Models;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace ElectronicsRentTP.Controllers
 {
@@ -13,11 +14,13 @@ namespace ElectronicsRentTP.Controllers
     public class CartController : Controller
     {
         private readonly ICartService _cartService;
+        private readonly IRentalService _rentalService;
         private readonly UserManager<User> _userManager;
 
-        public CartController(ICartService cartService, UserManager<User> userManager)
+        public CartController(ICartService cartService, IRentalService rentalService, UserManager<User> userManager)
         {
             _cartService = cartService;
+            _rentalService = rentalService;
             _userManager = userManager;
         }
 
@@ -142,7 +145,7 @@ namespace ElectronicsRentTP.Controllers
         // POST: /Cart/Checkout
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Checkout()
+        public async Task<IActionResult> Checkout(DateTime? startDate = null, DateTime? endDate = null)
         {
             var userId = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId))
@@ -151,30 +154,50 @@ namespace ElectronicsRentTP.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            var cartItems = await _cartService.GetCartItems(userId);
+            if (cartItems == null || cartItems.Count == 0)
+            {
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Your cart is empty.", ToastType.warning));
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Якщо дати не вказані, використовуємо за замовчуванням
+            var start = startDate ?? DateTime.UtcNow.Date;
+            var end = endDate ?? DateTime.UtcNow.Date.AddDays(1);
+
             try
             {
-                var cartItems = await _cartService.GetCartItems(userId);
-                if (cartItems == null || cartItems.Count == 0)
-                {
-                    TempData.Set(WebConstants.ToastMessage, new ToastModel("Your cart is empty.", ToastType.warning));
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // Тут можна додати логіку створення оренди з товарів кошика
-                // Поки що просто очищаємо кошик
+                // Створюємо оренди для всіх товарів в кошику
                 foreach (var item in cartItems)
                 {
+                    var model = new CreateRentalViewModel
+                    {
+                        EquipmentId = item.EquipmentId,
+                        StartDate = start,
+                        EndDate = end,
+                        PaymentType = DataAccess.Data.Enum.PaymentType.creditCard,
+                        Description = $"Rental from cart - {item.Quantity} items"
+                    };
+
+                    var (success, errorMessage, rental) = await _rentalService.CreateRentalAsync(model, userId);
+                    if (!success)
+                    {
+                        TempData.Set(WebConstants.ToastMessage, new ToastModel($"Error creating rental for {item.Equipment?.Name}: {errorMessage}", ToastType.danger));
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    // Видаляємо товар з кошика після успішного створення оренди
                     await _cartService.RemoveFromCart(userId, item.EquipmentId);
                 }
 
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Checkout completed successfully!", ToastType.success));
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("All items checked out successfully!", ToastType.success));
+                return RedirectToAction("MyBookings", "Rentals");
             }
             catch (System.Exception ex)
             {
                 TempData.Set(WebConstants.ToastMessage, new ToastModel(ex.Message, ToastType.danger));
+                return RedirectToAction(nameof(Index));
             }
-
-            return RedirectToAction(nameof(Index));
         }
     }
 }

@@ -104,13 +104,16 @@
     }
 
     .owner-section {
-        border-top: 1px solid #e2e8f0;
-        margin-top: 1.5rem;
+        border-top: 2px solid #e2e8f0;
+        margin-top: 2rem;
         padding-top: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 1rem;
+        gap: 1.5rem;
         flex-wrap: wrap;
     }
 
@@ -118,27 +121,30 @@
         display: flex;
         align-items: center;
         gap: 1rem;
+        flex: 1;
     }
 
     .owner-avatar {
-        width: 64px;
-        height: 64px;
-        border-radius: 999px;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
         object-fit: cover;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border: 3px solid white;
     }
 
     .owner-label {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #a0aec0;
-        margin-bottom: 0.15rem;
+        letter-spacing: 0.1em;
+        color: #718096;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
     }
 
     .owner-name {
-        font-size: 1rem;
-        font-weight: 600;
+        font-size: 1.1rem;
+        font-weight: 700;
         color: #2d3748;
     }
 </style>
@@ -200,20 +206,29 @@
                 </div>
 
                 <div class="mt-4 d-flex gap-2 flex-wrap">
-                    <a asp-action="Index" class="btn btn-dark">Back</a>
+                    <a asp-action="Index" class="btn btn-outline-secondary" style="border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 600; transition: all 0.3s ease;">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </a>
                     @if (Model.IsAvailable && Model.Quantity > 0)
                     {
-                        <a asp-controller="Rentals" asp-action="Create" asp-route-equipmentId="@Model.Id" class="btn btn-primary">
-                            Rent it
+                        <form asp-controller="Cart" asp-action="Add" method="post" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="equipmentId" value="@Model.Id" />
+                            <input type="hidden" name="quantity" value="1" />
+                            <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s ease;">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
+                            </button>
+                        </form>
+                        <a asp-controller="Rentals" asp-action="Create" asp-route-equipmentId="@Model.Id" class="btn btn-success" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 600; box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4); transition: all 0.3s ease;">
+                            <i class="bi bi-calendar-check"></i> Rent Now
                         </a>
                     }
                     else
                     {
-                        <button type="button" class="btn btn-secondary" disabled>
-                            Rent it (Unavailable)
+                        <button type="button" class="btn btn-secondary" disabled style="border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 600;">
+                            <i class="bi bi-x-circle"></i> Unavailable
                         </button>
                     }
-                    <a asp-controller="Favorite" asp-action="Add" asp-route-id="@Model.Id" class="btn btn-outline-primary">Add to Favorite</a>
                 </div>
                 <div class="owner-section">
                     <div class="owner-info">
@@ -228,7 +243,7 @@
                              class="owner-avatar" />
 
                         <div>
-                            <div class="owner-label">Owner</div>
+                            <div class="owner-label">@(string.IsNullOrEmpty(Model.OwnerId) || Model.OwnerId == "551b73c1-3601-490c-90bf-5af17a4408d5" ? "From Database" : "Owner")</div>
                             <div class="owner-name">@ownerName</div>
                         </div>
                     </div>

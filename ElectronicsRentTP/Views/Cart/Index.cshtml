@@ -384,7 +384,15 @@
                             </div>
                             <div class="quantity-control">
                                 <span class="quantity-label">Quantity:</span>
-                                <span class="quantity-value">@item.Quantity</span>
+                                <form asp-action="UpdateQuantity" method="post" style="display: inline-flex; gap: 0.5rem; align-items: center;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="equipmentId" value="@item.EquipmentId" />
+                                    <input type="number" name="quantity" value="@item.Quantity" min="1" max="@(item.Equipment?.Quantity + item.Quantity ?? 1)" 
+                                           class="form-control" style="width: 80px; display: inline-block;" />
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-arrow-clockwise"></i> Update
+                                    </button>
+                                </form>
                             </div>
                         </div>
 
@@ -428,10 +436,21 @@
                 </div>
 
                 <div class="summary-actions">
-                    <a asp-controller="Rentals" asp-action="Create" class="btn-checkout">
-                        <i class="bi bi-credit-card"></i>
-                        <span>Proceed to Checkout</span>
-                    </a>
+                    <form asp-controller="Cart" asp-action="Checkout" method="post" style="margin: 0;">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label for="startDate" class="form-label">Start Date:</label>
+                            <input type="date" name="startDate" id="startDate" class="form-control" value="@DateTime.UtcNow.Date.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="endDate" class="form-label">End Date:</label>
+                            <input type="date" name="endDate" id="endDate" class="form-control" value="@DateTime.UtcNow.Date.AddDays(1).ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <button type="submit" class="btn-checkout w-100">
+                            <i class="bi bi-credit-card"></i>
+                            <span>Proceed to Checkout</span>
+                        </button>
+                    </form>
 
                     <form asp-action="Clear" method="post" style="margin: 0;">
                         @Html.AntiForgeryToken()

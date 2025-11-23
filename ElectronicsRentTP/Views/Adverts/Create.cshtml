@@ -1,0 +1,80 @@
+@model BusinessLogic.Dtos.EquipmentDTO
+
+@{
+    ViewData["Title"] = "Create New Advert";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Створити нове оголошення</h2>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <h4>Помилки валідації:</h4>
+            <ul>
+                @foreach (var error in ViewData.ModelState)
+                {
+                    @foreach (var message in error.Value.Errors)
+                    {
+                        <li>@error.Key: @message.ErrorMessage</li>
+                    }
+                }
+            </ul>
+        </div>
+    }
+
+    <form class="row g-3" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <div class="col-md-6">
+            <label asp-for="Name" class="form-label">Назва товару *</label>
+            <input asp-for="Name" type="text" class="form-control" placeholder="Введіть назву товару">
+            <span asp-validation-for="Name" class="small text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="CategoryId" class="form-label">Категорія *</label>
+            <select asp-for="CategoryId" asp-items="@ViewBag.Categories" class="form-select">
+                <option value="">Оберіть категорію...</option>
+            </select>
+            <span asp-validation-for="CategoryId" class="small text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="PricePerHour" class="form-label">Ціна за годину (₴) *</label>
+            <input asp-for="PricePerHour" type="number" step="0.01" min="0.01" class="form-control" placeholder="Ціна">
+            <span asp-validation-for="PricePerHour" class="small text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Quantity" class="form-label">Кількість *</label>
+            <input asp-for="Quantity" type="number" min="1" class="form-control" placeholder="Кількість">
+            <span asp-validation-for="Quantity" class="small text-danger"></span>
+            <small class="form-text text-muted">Статус буде автоматично встановлено як "Доступно" якщо кількість > 0</small>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="ImageUrl" class="form-label">URL зображення</label>
+            <input asp-for="ImageUrl" type="url" class="form-control" placeholder="https://example.com/image.jpg">
+            <span asp-validation-for="ImageUrl" class="small text-danger"></span>
+        </div>
+        <div class="col-md-12">
+            <label asp-for="Description" class="form-label">Опис</label>
+            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Введіть опис товару"></textarea>
+            <span asp-validation-for="Description" class="small text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Створити оголошення
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+

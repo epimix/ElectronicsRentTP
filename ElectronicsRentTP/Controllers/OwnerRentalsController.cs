@@ -45,8 +45,19 @@ namespace ElectronicsRentTP.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            await _rentalService.ConfirmRental(id);
-            TempData["Success"] = "Rental approved successfully!";
+            try
+            {
+                await _rentalService.ConfirmRental(id, userId);
+                TempData["Success"] = "Rental approved successfully!";
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error approving rental: {ex.Message}";
+            }
             return RedirectToAction(nameof(Index));
         }
 

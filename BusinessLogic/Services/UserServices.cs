@@ -125,8 +125,11 @@ namespace BusinessLogic.Services
             var user = await ctx.Users
             .Include(u => u.MyAdverts)
             .FirstOrDefaultAsync(u => u.Id == equipment.OwnerId);
-            if (!await userManager.IsInRoleAsync(user, Roles.ADMIN))
-                throw new Exception("Only admins can add equipment");
+            
+            if (user == null)
+                throw new Exception("User not found");
+            
+            // Дозволяємо всім користувачам додавати товари
             user.MyAdverts.Add(equipment);
             await ctx.SaveChangesAsync();
         }

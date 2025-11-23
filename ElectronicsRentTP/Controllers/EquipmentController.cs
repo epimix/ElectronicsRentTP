@@ -9,12 +9,12 @@ using ElectronicsRentTP.Models;
 using BusinessLogic.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authorization;
 using ElectronicsRentTP.Helpers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ElectronicsRentTP.Controllers
 {
-    [Authorize] // але я залогінений в тому і прикол
+    // Equipment РґРѕСЃС‚СѓРїРЅРёР№ РґР»СЏ РІСЃС–С…, Create/Edit/Delete РїРµСЂРµРЅРµСЃРµРЅС– РІ AdvertsController
     public class EquipmentController : Controller
     {
         private readonly EquipmentRentalDbContext ctx;
@@ -39,10 +39,8 @@ namespace ElectronicsRentTP.Controllers
             this.userManager = userManager;
             this.rentalService = rentalService;
         }
-        //[Authorize(Roles = Roles.ADMIN)]
+        
         public async Task<IActionResult> Index(
-
-
             int page = 1,
             int? categoryId = null,
             string? searchName = null,
@@ -161,44 +159,11 @@ namespace ElectronicsRentTP.Controllers
             return RedirectToAction("Details", new { id = equipmentId });
         }
 
+        // Edit РґР»СЏ Р°РґРјС–РЅР°
         [HttpGet]
-        //[Authorize(Roles = Roles.ADMIN)]
-        public IActionResult Create()
-        {
-            SetCategoriesToViewBag();
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        //[Authorize(Roles = Roles.ADMIN)]
-        public async Task<IActionResult> Create(EquipmentDTO equipment)
-        {
-            if (!ModelState.IsValid)
-            {
-                SetCategoriesToViewBag();
-                return View(equipment);
-            }
-            var userId = userManager.GetUserId(User);
-            var user = await userManager.FindByIdAsync(userId);
-            Equipment equ = mapper.Map<Equipment>(equipment);
-
-            equ.OwnerId = userId;
-            await eq.AddEquipment(equ, userId);
-            TempData.Set(WebConstants.ToastMessage, new ToastModel("eq created successfully"));
-
-            return RedirectToAction("Index");
-            // але коли через адміна то товар норм додається
-        }
-                // але товар добавляється
-        [HttpGet]
-        //[Authorize(Roles = Roles.ADMIN)]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
-            if (!ModelState.IsValid)
-            {
-                return RedirectToAction("Index", "Home");
-            }
             var equipment = await eq.GetById(id);
             if (equipment == null) return NotFound();
 
@@ -208,7 +173,7 @@ namespace ElectronicsRentTP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        //[Authorize(Roles = Roles.ADMIN)]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(EquipmentDTO equipment)
         {
             if (!ModelState.IsValid)
@@ -217,25 +182,21 @@ namespace ElectronicsRentTP.Controllers
                 return View(equipment);
             }
 
-            await eq.UpdateEquipment(mapper.Map<Equipment>(equipment));
-            TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment updated successfully!"));
-
-            return RedirectToAction("Index");
-        }
-
-        //[Authorize(Roles = Roles.ADMIN)]
-        public async Task<IActionResult> Delete(int id)
-        {
-            if (!ModelState.IsValid)
+            var existing = await eq.GetById(equipment.Id);
+            if (existing != null)
             {
-                return RedirectToAction("Index", "Home");
+                existing.Name = equipment.Name;
+                existing.Description = equipment.Description;
+                existing.CategoryId = equipment.CategoryId;
+                existing.PricePerHour = equipment.PricePerHour;
+                existing.Quantity = equipment.Quantity;
+                existing.ImageUrl = equipment.ImageUrl;
+                await eq.UpdateEquipment(existing);
             }
-            await eq.DeleteEquipment(id);
-            TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment deleted successfully!"));
 
+            TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment updated successfully!", ToastType.success));
             return RedirectToAction("Index");
         }
-
 
         private void SetCategoriesToViewBag()
         {
