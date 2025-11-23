@@ -57,6 +57,13 @@ namespace DataAccess.Data
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Rental>()
+                .HasOne(r => r.Owner)
+                .WithMany()
+                .HasForeignKey(r => r.OwnerId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Equipment>()
                 .HasOne(e => e.Owner)
                 .WithMany(u => u.MyAdverts)
@@ -114,6 +121,22 @@ namespace DataAccess.Data
             modelBuilder.Entity<User>()
                 .Property(u => u.Balance)
                 .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<CartEntity>()
+                .Property(c => c.TotalPrice)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<CartEntity>()
+                .HasOne(c => c.User)
+                .WithMany(u => u.Carts)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CartEntity>()
+                .HasOne(c => c.Equipment)
+                .WithMany()
+                .HasForeignKey(c => c.EquipmentId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // ----- SEED CATEGORIES -----
             modelBuilder.Entity<EquipmentCategory>().HasData(

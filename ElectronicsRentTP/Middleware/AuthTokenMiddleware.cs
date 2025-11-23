@@ -29,24 +29,35 @@ namespace ElectronicsRentTP.Middleware
         {
             var path = context.Request.Path;
 
-
+            // Дозволяємо доступ до публічних сторінок
             if (path == "/" ||
                 path.StartsWithSegments("/Account/Login") ||
                 path.StartsWithSegments("/Account/Register") ||
+                path.StartsWithSegments("/Home") ||
+                path.StartsWithSegments("/Equipment") ||
                 path.StartsWithSegments("/css") ||
                 path.StartsWithSegments("/js") ||
-                path.StartsWithSegments("/images"))
+                path.StartsWithSegments("/images") ||
+                path.StartsWithSegments("/uploads") ||
+                path.StartsWithSegments("/lib"))
             {
                 await _next(context);
                 return;
             }
 
+            // Перевіряємо стандартну автентифікацію ASP.NET Identity
+            if (context.User?.Identity?.IsAuthenticated == true)
+            {
+                await _next(context);
+                return;
+            }
 
+            // Перевіряємо JWT токен з cookie
             if (context.Request.Cookies.TryGetValue("sessionToken", out var token) && !string.IsNullOrEmpty(token))
             {
                 var jwtKey = _config["JwtOptions:Key"];
                 var jwtIssuer = _config["JwtOptions:Issuer"];
-                
+
                 if (string.IsNullOrEmpty(jwtKey) || string.IsNullOrEmpty(jwtIssuer))
                 {
                     await RedirectToRegister(context);
@@ -83,7 +94,20 @@ namespace ElectronicsRentTP.Middleware
                         return;
                     }
 
+                    // Встановлюємо principal як поточного користувача
+                    // Переконуємося, що Identity має правильний AuthenticationType
+                    if (principal.Identity is ClaimsIdentity claimsIdentity)
+                    {
+                        // Якщо Identity не автентифіковано, встановлюємо правильний тип
+                        if (!claimsIdentity.IsAuthenticated)
+                        {
+                            var newIdentity = new ClaimsIdentity(claimsIdentity.Claims, "JWT", ClaimTypes.Name, ClaimTypes.Role);
+                            principal = new ClaimsPrincipal(newIdentity);
+                        }
+                    }
+
                     context.User = principal;
+
                     await _next(context);
                     return;
                 }
@@ -136,13 +160,23 @@ namespace ElectronicsRentTP.Middleware
                     await db.SaveChangesAsync();
 
 
+                    var isHttps = context.Request.IsHttps;
                     context.Response.Cookies.Append("sessionToken", newJwt, new CookieOptions
                     {
                         HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.Strict,
-                        Expires = DateTime.UtcNow.AddMinutes(1) 
+                        Secure = isHttps, // Secure тільки для HTTPS
+                        SameSite = SameSiteMode.Lax, // Lax для кращої сумісності
+                        Expires = DateTime.UtcNow.AddMinutes(60) // Збільшуємо час життя токену
                     });
+
+                    // Створюємо новий principal з оновленим токеном
+                    var newPrincipal = handler.ValidateToken(newJwt, parameters, out _);
+                    if (newPrincipal.Identity is ClaimsIdentity newClaimsIdentity && !newClaimsIdentity.IsAuthenticated)
+                    {
+                        var authenticatedIdentity = new ClaimsIdentity(newClaimsIdentity.Claims, "JWT", ClaimTypes.Name, ClaimTypes.Role);
+                        newPrincipal = new ClaimsPrincipal(authenticatedIdentity);
+                    }
+                    context.User = newPrincipal;
 
                     await _next(context);
                     return;
@@ -163,7 +197,7 @@ namespace ElectronicsRentTP.Middleware
             var jwtKey = config["JwtOptions:Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
             var jwtIssuer = config["JwtOptions:Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
             var jwtAudience = config["JwtOptions:Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
-            
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

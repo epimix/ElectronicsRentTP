@@ -13,5 +13,6 @@ namespace BusinessLogic.Interfaces
 
         Task<IList<CartEntity>> GetCartItems(string userId);
         Task RemoveFromCart(string userId, int equipmentId);
+        Task UpdateQuantity(string userId, int equipmentId, int newQuantity);
     }
 }

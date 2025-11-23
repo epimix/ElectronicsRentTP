@@ -393,6 +393,7 @@
                                 Subtotal: $@((item.Equipment?.PricePerHour ?? 0) * item.Quantity)
                             </div>
                             <form asp-action="Remove" method="post" style="margin: 0;">
+                                @Html.AntiForgeryToken()
                                 <input type="hidden" name="equipmentId" value="@item.EquipmentId" />
                                 <button type="submit" class="btn-remove">
                                     <i class="bi bi-trash"></i>
@@ -433,6 +434,7 @@
                     </a>
 
                     <form asp-action="Clear" method="post" style="margin: 0;">
+                        @Html.AntiForgeryToken()
                         <button type="submit" class="btn-clear" onclick="return confirm('Are you sure you want to clear your cart?')">
                             <i class="bi bi-x-circle"></i>
                             <span>Clear Cart</span>

@@ -269,7 +269,7 @@
               asp-action="Add"
               method="post"
               style="margin: 0;">
-
+            @Html.AntiForgeryToken()
             <input type="hidden" name="equipmentId" value="@Model.Id" />
             <input type="hidden" name="quantity" value="1" />
 
