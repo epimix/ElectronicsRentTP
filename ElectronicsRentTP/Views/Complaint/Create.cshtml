@@ -1,0 +1,17 @@
+﻿@model DataAccess.Data.Models.ComplaintCreateModel
+
+@{
+    ViewData["Title"] = "Поскаржитися на оренду";
+}
+
+<h2>Поскаржитися</h2>
+
+<form asp-action="Create" method="post" class="mt-3">
+    <input type="hidden" asp-for="RentalId" />
+    <input type="hidden" asp-for="TargetUserId" />
+
+    <label class="form-label">Опишіть проблему:</label>
+    <textarea asp-for="Message" class="form-control" rows="5"></textarea>
+
+    <button type="submit" class="btn btn-danger mt-3">Надіслати жалобу</button>
+</form>

@@ -1,0 +1,211 @@
+﻿@model DataAccess.Data.Models.OwnerProfileViewModel
+
+@{
+    ViewData["Title"] = Model.DisplayName + " — Profile";
+}
+
+<style>
+    .profile-container {
+        max-width: 1100px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .profile-header {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        background: white;
+        padding: 1.75rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        margin-bottom: 2rem;
+    }
+
+    .profile-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 999px;
+        object-fit: cover;
+    }
+
+    .profile-name {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .online-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.875rem;
+    }
+
+    .online-badge-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+    }
+
+    .online-badge.online {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+
+        .online-badge.online .online-badge-dot {
+            background: #38a169;
+        }
+
+    .online-badge.offline {
+        background: #edf2f7;
+        color: #4a5568;
+    }
+
+        .online-badge.offline .online-badge-dot {
+            background: #a0aec0;
+        }
+
+    .profile-section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .adverts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .advert-card {
+        background: white;
+        border-radius: 14px;
+        padding: 1rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        height: 100%;
+    }
+
+    .advert-image {
+        width: 100%;
+        height: 170px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+    }
+
+    .advert-name {
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .advert-price {
+        font-weight: 600;
+        color: #2b6cb0;
+        margin-bottom: 0.25rem;
+    }
+
+    .advert-status {
+        font-size: 0.875rem;
+        color: #4a5568;
+    }
+
+    .advert-actions {
+        margin-top: auto;
+        display: flex;
+        justify-content: flex-end;
+    }
+</style>
+
+<div class="profile-container">
+    <div class="profile-header">
+        @{
+            var avatarUrl = Model.ProfilePicture
+            ?? "https://via.placeholder.com/96?text=U";
+        }
+        <img src="@avatarUrl"
+             alt="@Model.DisplayName"
+             class="profile-avatar" />
+
+        <div>
+            <div class="profile-name">@Model.DisplayName</div>
+
+            @if (Model.IsOnline)
+            {
+                <div class="online-badge online">
+                    <span class="online-badge-dot"></span>
+                    <span>Online</span>
+                </div>
+            }
+            else if (Model.LastOnline.HasValue)
+            {
+                <div class="online-badge offline">
+                    <span class="online-badge-dot"></span>
+                    <span>Last seen @Model.LastOnline.Value.ToLocalTime().ToString("g")</span>
+                </div>
+            }
+            else
+            {
+                <div class="online-badge offline">
+                    <span class="online-badge-dot"></span>
+                    <span>No activity information</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div>
+        <div class="profile-section-title">User's adverts</div>
+
+        @if (Model.Adverts != null && Model.Adverts.Any())
+        {
+            <div class="adverts-grid">
+                @foreach (var advert in Model.Adverts)
+                {
+                    <div class="advert-card">
+                        @{
+                            var img = advert.ImageUrl
+                            ?? "https://via.placeholder.com/400x250?text=No+image";
+                        }
+
+                        <img src="@img"
+                             alt="@advert.Name"
+                             class="advert-image" />
+
+                        <div class="advert-name">@advert.Name</div>
+                        <div class="advert-price">@advert.PricePerHour.ToString("0.##") Kč / hour</div>
+                        <div class="advert-status">
+                            @if (advert.IsAvailable)
+                            {
+                                <span>Available</span>
+                            }
+                            else
+                            {
+                                <span>Currently rented</span>
+                            }
+                        </div>
+
+                        <div class="advert-actions">
+                            <a asp-controller="Equipment"
+                               asp-action="Details"
+                               asp-route-id="@advert.Id"
+                               class="btn btn-sm btn-outline-primary">
+                                Open advert
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p>This user has no adverts yet.</p>
+        }
+    </div>
+</div>

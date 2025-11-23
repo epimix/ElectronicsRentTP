@@ -45,22 +45,133 @@
         object-fit: cover;
         border-radius: 6px;
     }
+
+
+    .chat-context-menu {
+        position: absolute;
+        display: none;
+        min-width: 160px;
+        background: #ffffff;
+        border: 1px solid #cbd5e0;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(15,23,42,0.25);
+        z-index: 9999;
+        padding: 4px;
+        font-size: 0.9rem;
+    }
+
+        .chat-context-menu button {
+            width: 100%;
+            text-align: left;
+            padding: 6px 10px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+            .chat-context-menu button:hover {
+                background: #edf2f7;
+            }
+
+            .chat-context-menu button.danger {
+                color: #b91c1c;
+            }
 </style>
 
 <h2>My Messages</h2>
 
 @foreach (var chat in Model)
 {
-    <a asp-controller="Chat" asp-action="Room" asp-route-chatRoomId="@chat.ChatRoomId" style="text-decoration:none; color:inherit;">
-        <div class="chat-card">
-            <img src="@chat.PartnerAvatar" class="avatar" />
 
-            <div class="chat-text-block">
-                <div class="nickname">@chat.PartnerName</div>
-                <div class="last-msg">@((chat.IsMyMessage ? "You: " : "") + chat.LastMessage)</div>
-            </div>
+    <div class="chat-card"
+         data-chat-id="@chat.ChatRoomId"
+         data-open-url="@Url.Action("Room", "Chat", new { chatRoomId = chat.ChatRoomId })">
 
-            <img src="@chat.EquipmentImage" class="equip-img" />
+        <img src="@chat.PartnerAvatar" class="avatar" />
+
+        <div class="chat-text-block">
+            <div class="nickname">@chat.PartnerName</div>
+            <div class="last-msg">@((chat.IsMyMessage ? "You: " : "") + chat.LastMessage)</div>
         </div>
-    </a>
+
+        <img src="@chat.EquipmentImage" class="equip-img" />
+    </div>
+}
+
+
+<div id="chatContextMenu" class="chat-context-menu">
+    <button type="button" data-action="open">Open chat</button>
+    <button type="button" data-action="pin">Pin chat</button>
+    <button type="button" data-action="unpin">Unpin chat</button>
+    <button type="button" data-action="delete" class="danger">Delete chat</button>
+</div>
+
+
+@section Scripts {
+    <script>
+        const contextMenu = document.getElementById("chatContextMenu");
+        let currentChatId = null;
+        let currentOpenUrl = null;
+
+
+        document.querySelectorAll(".chat-card").forEach(card => {
+            card.addEventListener("contextmenu", function (e) {
+                e.preventDefault();
+
+                currentChatId = this.dataset.chatId;
+                currentOpenUrl = this.dataset.openUrl;
+
+
+                contextMenu.style.top = e.pageY + "px";
+                contextMenu.style.left = e.pageX + "px";
+                contextMenu.style.display = "block";
+            });
+
+
+            card.addEventListener("click", function () {
+                const url = this.dataset.openUrl;
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+        });
+
+        contextMenu.addEventListener("click", function (e) {
+            if (e.target.tagName !== "BUTTON") return;
+
+            const action = e.target.dataset.action;
+
+            if (action === "open") {
+                window.location.href = currentOpenUrl;
+            }
+            else if (action === "pin") {
+                window.location.href = "/Chat/Pin?chatRoomId=" + currentChatId;
+            }
+            else if (action === "unpin") {
+                window.location.href = "/Chat/Unpin?chatRoomId=" + currentChatId;
+            }
+            else if (action === "delete") {
+                if (confirm("Delete this chat?")) {
+                    window.location.href = "/Chat/Delete?chatRoomId=" + currentChatId;
+                }
+            }
+
+            contextMenu.style.display = "none";
+        });
+
+
+
+        document.addEventListener("click", function (e) {
+            if (!contextMenu.contains(e.target)) {
+                contextMenu.style.display = "none";
+            }
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                contextMenu.style.display = "none";
+            }
+        });
+    </script>
 }

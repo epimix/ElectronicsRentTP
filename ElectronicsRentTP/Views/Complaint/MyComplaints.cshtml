@@ -1,0 +1,61 @@
+﻿@model ElectronicsRentTP.Models.ViewModels.MyComplaintsVM
+
+@{
+    ViewData["Title"] = "My Complaints";
+}
+
+<h2 class="text-center mt-4">My Complaints</h2>
+
+<hr />
+
+<h4 class="mt-4">Complaints I Sent</h4>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Against</th>
+            <th>Message</th>
+            <th>Date</th>
+            <th>Admin Comment</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model.SentComplaints)
+        {
+            <tr>
+                <td>@c.Id</td>
+                <td>@c.TargetUser.Email</td>
+                <td>@c.Message</td>
+                <td>@c.Created.ToLocalTime()</td>
+                <td>@c.AdminComment</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="mt-4">Complaints Against Me</h4>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>From</th>
+            <th>Message</th>
+            <th>Date</th>
+            <th>Admin Comment</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model.ComplaintsAgainstMe)
+        {
+            <tr>
+                <td>@c.Id</td>
+                <td>@c.Reporter.Email</td>
+                <td>@c.Message</td>
+                <td>@c.Created.ToLocalTime()</td>
+                <td>@c.AdminComment</td>
+            </tr>
+        }
+    </tbody>
+</table>

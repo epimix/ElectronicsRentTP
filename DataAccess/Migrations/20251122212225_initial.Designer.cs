@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(EquipmentRentalDbContext))]
-    [Migration("20251116231955_initial")]
+    [Migration("20251122212225_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -53,6 +53,116 @@ namespace DataAccess.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("CartEntities");
+                });
+
+            modelBuilder.Entity("DataAccess.Data.Entities.ChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChatRoomId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatRoomId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("ChatMessages");
+                });
+
+            modelBuilder.Entity("DataAccess.Data.Entities.ChatRoom", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EquipmentId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPinned")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RenterId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("RenterId");
+
+                    b.ToTable("ChatRooms");
+                });
+
+            modelBuilder.Entity("DataAccess.Data.Entities.Complaint", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RentalId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReporterId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Resolved")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TargetUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RentalId");
+
+                    b.HasIndex("ReporterId");
+
+                    b.HasIndex("TargetUserId");
+
+                    b.ToTable("Complaints");
                 });
 
             modelBuilder.Entity("DataAccess.Data.Entities.Equipment", b =>
@@ -125,6 +235,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://cdn.media.amplience.net/i/canon/eos-r5_front_rf24-105mmf4lisusm_square_32c26ad194234d42b3cd9e582a21c99b",
                             IsAvailable = true,
                             Name = "Canon EOS R5 Camera",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 50m,
                             Quantity = 2,
                             ReviewCount = 0,
@@ -140,6 +251,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://sony.scene7.com/is/image/sonyglobalsolutions/ULTMIC1_Intro2_M?$productIntroPlatemobile$&fmt=png-alpha",
                             IsAvailable = true,
                             Name = "Sony Wireless Microphone",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 15m,
                             Quantity = 5,
                             ReviewCount = 0,
@@ -155,6 +267,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://bigmag.ua/image/cache/catalog/image/Product/Apple_MacBook_BY/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019/Apple%20MacBook%20Pro%2016%20Space%20Gray%202019%201(1)-2000x2000.jpg",
                             IsAvailable = true,
                             Name = "MacBook Pro 16",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 30m,
                             Quantity = 3,
                             ReviewCount = 0,
@@ -170,6 +283,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=500",
                             IsAvailable = true,
                             Name = "DJI Mini 4 Pro Drone",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 40m,
                             Quantity = 1,
                             ReviewCount = 0,
@@ -185,6 +299,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://thumbs.static-thomann.de/thumb/padthumb600x600/pics/bdb/_51/519347/16724814_800.jpg",
                             IsAvailable = true,
                             Name = "Bose Professional Speakers",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 25m,
                             Quantity = 2,
                             ReviewCount = 0,
@@ -200,6 +315,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://musicmag.com.ua/media/catalog/product/cache/1/image/736x460/62defc7f46f3fbfc8afcd112227d1181/e/p/epson_pro_cinema_4040_front.jpg",
                             IsAvailable = true,
                             Name = "Epson Projector 4K",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 35m,
                             Quantity = 2,
                             ReviewCount = 0,
@@ -215,6 +331,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://fotomost.com.ua/content/images/28/500x500l50nn0/sony-fx3-56165663061752.jpg",
                             IsAvailable = true,
                             Name = "Sony FX3 Cinema Camera",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 75m,
                             Quantity = 2,
                             ReviewCount = 0,
@@ -230,6 +347,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://soundstore.com.ua/content/images/32/1200x800l80nn0/mikrofony-i-mikrofonnye-radiosistemy8318-shure-sm7b.html-40795060250278.jpg",
                             IsAvailable = true,
                             Name = "Shure SM7B Microphone",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 20m,
                             Quantity = 4,
                             ReviewCount = 0,
@@ -245,6 +363,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://fotosale.ua/images/products/66/products.66193.1.b.jpg",
                             IsAvailable = true,
                             Name = "EcoFlow DELTA Max 2000 charging station",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 25m,
                             Quantity = 3,
                             ReviewCount = 0,
@@ -260,6 +379,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://photorent.kiev.ua/wp-content/uploads/GoPro-12-black-3.jpg",
                             IsAvailable = true,
                             Name = "GoPro Hero 12",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 18m,
                             Quantity = 5,
                             ReviewCount = 0,
@@ -275,6 +395,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://www.hytekelectronics.co.uk/wp-content/uploads/2017/04/YAM-MG16XU.jpg",
                             IsAvailable = true,
                             Name = "Yamaha MG16XU Mixer",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 30m,
                             Quantity = 2,
                             ReviewCount = 0,
@@ -290,6 +411,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://m.media-amazon.com/images/I/51bwiYTxx2L.jpg",
                             IsAvailable = true,
                             Name = "BenQ 4K Monitor 32 inch",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 22m,
                             Quantity = 4,
                             ReviewCount = 0,
@@ -305,6 +427,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://prodj.ua/image/cache/catalog/img1b/2020/01/20200105081539-920x920.webp",
                             IsAvailable = true,
                             Name = "Rode VideoMic Pro+",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 12m,
                             Quantity = 6,
                             ReviewCount = 0,
@@ -320,6 +443,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://fotosale.ua/images/products/54/products.54671.1.b.jpg",
                             IsAvailable = true,
                             Name = "Canon RF 24-70mm f/2.8 Lens",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 35m,
                             Quantity = 2,
                             ReviewCount = 0,
@@ -335,6 +459,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://prodj.ua/image/cache/catalog/img3b/2020/11/20201103133205-920x920.webp",
                             IsAvailable = true,
                             Name = "Zoom H6 Recorder",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 28m,
                             Quantity = 3,
                             ReviewCount = 0,
@@ -349,7 +474,8 @@ namespace DataAccess.Migrations
                             Description = "The polarizing light filter increases the visual sharpness and purity of color in the photograph",
                             ImageUrl = "https://fotosale.ua/images/products/19/products.19876.1.b.jpg",
                             IsAvailable = true,
-                            Name = "RODENSTOCK HR Digital Super MC Circular-Pol filter ",
+                            Name = "RODENSTOCK HR Digital Super MC Circular-Pol filter",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 45m,
                             Quantity = 2,
                             ReviewCount = 0,
@@ -365,6 +491,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://fotosale.ua/images/products/66/products.66114.1.b.jpg",
                             IsAvailable = true,
                             Name = "Headphones Sennheiser RS 195",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 10m,
                             Quantity = 8,
                             ReviewCount = 0,
@@ -380,6 +507,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://fotosale.ua/images/products/36/products.36866.1.b.jpg",
                             IsAvailable = true,
                             Name = "Manfrotto Tripod",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 15m,
                             Quantity = 5,
                             ReviewCount = 0,
@@ -395,6 +523,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://res.cloudinary.com/elgato-pwa/image/upload/q_auto,f_auto/v1725280007/Products/10GBO9901%20%28Stream%20Deck%20Studio%29/ATF/Stream-Deck-Studio-ATF-04.jpg",
                             IsAvailable = true,
                             Name = "Elgato Stream Deck Studio",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 18m,
                             Quantity = 4,
                             ReviewCount = 0,
@@ -410,6 +539,7 @@ namespace DataAccess.Migrations
                             ImageUrl = "https://fotosale.ua/images/products/67/products.67303.1.b.jpg",
                             IsAvailable = true,
                             Name = "Aputure amaran Ace 25c",
+                            OwnerId = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             PricePerHour = 20m,
                             Quantity = 3,
                             ReviewCount = 0,
@@ -571,6 +701,9 @@ namespace DataAccess.Migrations
                     b.Property<int>("EquipmentId")
                         .HasColumnType("int");
 
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("PaymentType")
                         .HasColumnType("int");
 
@@ -590,6 +723,8 @@ namespace DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("EquipmentId");
+
+                    b.HasIndex("OwnerId");
 
                     b.HasIndex("UserId");
 
@@ -658,6 +793,9 @@ namespace DataAccess.Migrations
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("LastOnline")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -709,6 +847,27 @@ namespace DataAccess.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "551b73c1-3601-490c-90bf-5af17a4408d5",
+                            AccessFailedCount = 0,
+                            Balance = 0m,
+                            ConcurrencyStamp = "6f8fb3f9-2bac-441b-92c6-759522a9b74c",
+                            Email = "admin9@gmail.com",
+                            EmailConfirmed = true,
+                            FullName = "Андрій Дячук",
+                            LockoutEnabled = false,
+                            Login = "Андрій Дячук",
+                            NormalizedEmail = "ADMIN9@GMAIL.COM",
+                            NormalizedUserName = "ADMIN9@GMAIL.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGrim0nZkMw+CQKhwm2c8UaL+gGPrdMEW7bjh+0jRBgBtQqEV8vAGszWO1eGIRHImA==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "33aef106-e3f6-44c7-99d7-c11a91909082",
+                            TwoFactorEnabled = false,
+                            UserName = "admin9@gmail.com"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -863,6 +1022,79 @@ namespace DataAccess.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DataAccess.Data.Entities.ChatMessage", b =>
+                {
+                    b.HasOne("DataAccess.Data.Entities.ChatRoom", "ChatRoom")
+                        .WithMany("Messages")
+                        .HasForeignKey("ChatRoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Data.Entities.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ChatRoom");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("DataAccess.Data.Entities.ChatRoom", b =>
+                {
+                    b.HasOne("DataAccess.Data.Entities.Equipment", "Equipment")
+                        .WithMany()
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Data.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Data.Entities.User", "Renter")
+                        .WithMany()
+                        .HasForeignKey("RenterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Equipment");
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("Renter");
+                });
+
+            modelBuilder.Entity("DataAccess.Data.Entities.Complaint", b =>
+                {
+                    b.HasOne("DataAccess.Data.Entities.Rental", "Rental")
+                        .WithMany()
+                        .HasForeignKey("RentalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Data.Entities.User", "Reporter")
+                        .WithMany()
+                        .HasForeignKey("ReporterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Data.Entities.User", "TargetUser")
+                        .WithMany()
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Rental");
+
+                    b.Navigation("Reporter");
+
+                    b.Navigation("TargetUser");
+                });
+
             modelBuilder.Entity("DataAccess.Data.Entities.Equipment", b =>
                 {
                     b.HasOne("DataAccess.Data.Entities.EquipmentCategory", "Category")
@@ -915,13 +1147,19 @@ namespace DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DataAccess.Data.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId");
+
                     b.HasOne("DataAccess.Data.Entities.User", "User")
                         .WithMany("Rentals")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Equipment");
+
+                    b.Navigation("Owner");
 
                     b.Navigation("User");
                 });
@@ -994,6 +1232,11 @@ namespace DataAccess.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("DataAccess.Data.Entities.ChatRoom", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("DataAccess.Data.Entities.Equipment", b =>
