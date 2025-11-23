@@ -2,6 +2,17 @@
 @using DataAccess.Data.Entities
 
 <style>
+    .owner-name-link {
+        font-weight: 600;
+        color: #2d3748;
+        text-decoration: none;
+    }
+
+        .owner-name-link:hover {
+            text-decoration: underline;
+            color: #4a5568;
+        }
+
     .equipment-details-container {
         max-width: 1200px;
         margin: 2rem auto;
@@ -229,8 +240,22 @@
 
                         <div>
                             <div class="owner-label">Owner</div>
-                            <div class="owner-name">@ownerName</div>
+
+                            @if (!string.IsNullOrEmpty(Model.OwnerId))
+                            {
+                                <a asp-controller="Users"
+                                   asp-action="Profile"
+                                   asp-route-id="@Model.OwnerId"
+                                   class="owner-name-link">
+                                    @ownerName
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="owner-name">@ownerName</div>
+                            }
                         </div>
+
                     </div>
 
                     @if (ViewBag.IsAuthenticated == true && Model.OwnerId != null)

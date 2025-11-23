@@ -448,6 +448,18 @@
                                 </button>
                             </form>
                         }
+                        @if (item.Status == RentalStatus.Pending ||
+                                        item.Status == RentalStatus.Approved ||
+                                        item.Status == RentalStatus.Completed)
+                        {
+                            <a asp-controller="Complaint"
+                               asp-action="Create"
+                               asp-route-rentalId="@item.Id"
+                               class="btn-cancel-booking btn-sm mt-2">
+                                Поскаржитися
+                            </a>
+                        }
+
                     </div>
                 </div>
             }

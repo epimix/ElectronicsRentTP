@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(EquipmentRentalDbContext))]
-    [Migration("20251121211931_ChatPinDel")]
-    partial class ChatPinDel
+    [Migration("20251122212225_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -123,6 +123,46 @@ namespace DataAccess.Migrations
                     b.HasIndex("RenterId");
 
                     b.ToTable("ChatRooms");
+                });
+
+            modelBuilder.Entity("DataAccess.Data.Entities.Complaint", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RentalId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReporterId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Resolved")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TargetUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RentalId");
+
+                    b.HasIndex("ReporterId");
+
+                    b.HasIndex("TargetUserId");
+
+                    b.ToTable("Complaints");
                 });
 
             modelBuilder.Entity("DataAccess.Data.Entities.Equipment", b =>
@@ -753,6 +793,9 @@ namespace DataAccess.Migrations
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("LastOnline")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -811,7 +854,7 @@ namespace DataAccess.Migrations
                             Id = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             AccessFailedCount = 0,
                             Balance = 0m,
-                            ConcurrencyStamp = "069cd63b-0253-4254-9926-4ec08882513c",
+                            ConcurrencyStamp = "6f8fb3f9-2bac-441b-92c6-759522a9b74c",
                             Email = "admin9@gmail.com",
                             EmailConfirmed = true,
                             FullName = "Андрій Дячук",
@@ -819,9 +862,9 @@ namespace DataAccess.Migrations
                             Login = "Андрій Дячук",
                             NormalizedEmail = "ADMIN9@GMAIL.COM",
                             NormalizedUserName = "ADMIN9@GMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENGYpEP7ztDURJ0eVvmUkaIqJBBpe8Nh/GCybtHoR5AyY+8f6RISQciYqZ9QI5qUmw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGrim0nZkMw+CQKhwm2c8UaL+gGPrdMEW7bjh+0jRBgBtQqEV8vAGszWO1eGIRHImA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "93287861-cb30-4725-9490-46e51546a7db",
+                            SecurityStamp = "33aef106-e3f6-44c7-99d7-c11a91909082",
                             TwoFactorEnabled = false,
                             UserName = "admin9@gmail.com"
                         });
@@ -1023,6 +1066,33 @@ namespace DataAccess.Migrations
                     b.Navigation("Owner");
 
                     b.Navigation("Renter");
+                });
+
+            modelBuilder.Entity("DataAccess.Data.Entities.Complaint", b =>
+                {
+                    b.HasOne("DataAccess.Data.Entities.Rental", "Rental")
+                        .WithMany()
+                        .HasForeignKey("RentalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Data.Entities.User", "Reporter")
+                        .WithMany()
+                        .HasForeignKey("ReporterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Data.Entities.User", "TargetUser")
+                        .WithMany()
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Rental");
+
+                    b.Navigation("Reporter");
+
+                    b.Navigation("TargetUser");
                 });
 
             modelBuilder.Entity("DataAccess.Data.Entities.Equipment", b =>
