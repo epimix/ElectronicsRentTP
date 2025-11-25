@@ -215,7 +215,6 @@ app.UseRouting();
 
 app.UseAuthentication();
 
-
 app.UseMiddleware<ElectronicsRentTP.Middleware.AuthTokenMiddleware>();
 
 app.UseAuthorization();

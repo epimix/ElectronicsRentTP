@@ -2,6 +2,17 @@
 @using DataAccess.Data.Entities
 
 <style>
+    .owner-name-link {
+        font-weight: 600;
+        color: #2d3748;
+        text-decoration: none;
+    }
+
+        .owner-name-link:hover {
+            text-decoration: underline;
+            color: #4a5568;
+        }
+
     .equipment-details-container {
         max-width: 1200px;
         margin: 2rem auto;
@@ -246,6 +257,7 @@
                             <div class="owner-label">@(string.IsNullOrEmpty(Model.OwnerId) || Model.OwnerId == "551b73c1-3601-490c-90bf-5af17a4408d5" ? "From Database" : "Owner")</div>
                             <div class="owner-name">@ownerName</div>
                         </div>
+
                     </div>
 
                     @if (ViewBag.IsAuthenticated == true && Model.OwnerId != null)

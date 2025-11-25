@@ -24,6 +24,8 @@ namespace DataAccess.Data
 
         public DbSet<ChatRoom> ChatRooms { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<Complaint> Complaints { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -99,6 +101,23 @@ namespace DataAccess.Data
                 .HasOne(cm => cm.Sender)
                 .WithMany()                               // знову без колекції в User
                 .HasForeignKey(cm => cm.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Complaint>()
+            .HasOne(c => c.Reporter)
+            .WithMany()
+            .HasForeignKey(c => c.ReporterId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Complaint>()
+                .HasOne(c => c.TargetUser)
+                .WithMany()
+                .HasForeignKey(c => c.TargetUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Complaint>()
+                .HasOne(c => c.Rental)
+                .WithMany()
+                .HasForeignKey(c => c.RentalId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Decimal types

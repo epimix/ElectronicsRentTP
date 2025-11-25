@@ -2,10 +2,13 @@
 using DataAccess.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection; // <- ДОДАЙ ЦЕ
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -29,7 +32,7 @@ namespace ElectronicsRentTP.Middleware
         {
             var path = context.Request.Path;
 
-            // Дозволяємо доступ до публічних сторінок
+
             if (path == "/" ||
                 path.StartsWithSegments("/Account/Login") ||
                 path.StartsWithSegments("/Account/Register") ||
@@ -41,6 +44,32 @@ namespace ElectronicsRentTP.Middleware
                 path.StartsWithSegments("/uploads") ||
                 path.StartsWithSegments("/lib"))
             {
+                if (context.Request.Cookies.TryGetValue("sessionToken", out var t) && !string.IsNullOrEmpty(t))
+                {
+                    var jwtKey = _config["JwtOptions:Key"];
+                    var jwtIssuer = _config["JwtOptions:Issuer"];
+
+                    var handler = new JwtSecurityTokenHandler();
+                    var key = Encoding.UTF8.GetBytes(jwtKey);
+                    var parameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = true,
+                        ValidIssuer = jwtIssuer,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                    ClaimsPrincipal? principal = null;
+                    string? userId = null;
+
+                    principal = handler.ValidateToken(t, parameters, out _);
+                    userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                    context.User = principal;
+                }
+
                 await _next(context);
                 return;
             }
@@ -82,6 +111,7 @@ namespace ElectronicsRentTP.Middleware
 
                 try
                 {
+
                     var jwt = handler.ReadJwtToken(token);
                     Console.WriteLine(jwt.ValidTo);
 
@@ -106,6 +136,7 @@ namespace ElectronicsRentTP.Middleware
                         }
                     }
 
+                    // Сетимо юзера в HttpContext (включно з ролями, якщо вони є в токені)
                     context.User = principal;
 
                     await _next(context);
@@ -113,7 +144,7 @@ namespace ElectronicsRentTP.Middleware
                 }
                 catch (SecurityTokenExpiredException)
                 {
-
+                    // Токен протух — пробуємо по refresh токену
                     var expiredJwt = handler.ReadJwtToken(token);
                     userId = expiredJwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
@@ -123,7 +154,8 @@ namespace ElectronicsRentTP.Middleware
                         return;
                     }
 
-                    var user = await db.Users.Include(u => u.RefreshTokens)
+                    var user = await db.Users
+                        .Include(u => u.RefreshTokens)
                         .FirstOrDefaultAsync(u => u.Id == userId);
 
                     if (user == null)
@@ -142,9 +174,8 @@ namespace ElectronicsRentTP.Middleware
                         return;
                     }
 
-
-                    var newJwt = GenerateNewJwtToken(user, _config);
-
+                    // Генеруємо новий access JWT з ролями
+                    var newJwt = await GenerateNewJwtToken(user, context);
 
                     var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                     var newRefresh = new RefreshToken
@@ -188,11 +219,13 @@ namespace ElectronicsRentTP.Middleware
                 }
             }
 
-
+            // Нема токена взагалі
             await RedirectToRegister(context);
         }
 
-        private string GenerateNewJwtToken(User user, IConfiguration config)
+        
+
+        private async Task<string> GenerateNewJwtToken(User user, HttpContext context)
         {
             var jwtKey = config["JwtOptions:Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
             var jwtIssuer = config["JwtOptions:Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
@@ -201,11 +234,18 @@ namespace ElectronicsRentTP.Middleware
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
+            var roles = await userManager.GetRolesAsync(user);
+
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
             };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var token = new JwtSecurityToken(
                 issuer: jwtIssuer,

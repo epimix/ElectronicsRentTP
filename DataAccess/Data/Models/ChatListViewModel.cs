@@ -20,6 +20,9 @@ namespace DataAccess.Data.Models
 
         public string LastMessage { get; set; }
         public DateTime? LastMessageTime { get; set; }
+
+        public bool IsPinned { get; set; }
+
         public bool IsMyMessage { get; set; }
     }
 }

@@ -254,12 +254,15 @@
                                 <span>Home</span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Equipment" asp-action="Index">
-                                <i class="bi bi-grid me-1"></i>
-                                <span>Equipment</span>
-                            </a>
-                        </li>
+                        @if (User.IsInRole("admin")){
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Equipment" asp-action="Index">
+                                    <i class="bi bi-grid me-1"></i>
+                                    <span>Equipment</span>
+                                </a>
+                            </li>
+                        }
+
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Cart" asp-action="Index">
                                 <i class="bi bi-cart me-1"></i>
