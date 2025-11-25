@@ -82,6 +82,33 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// -------------------- FIX MISSING LastOnline COLUMN (MUST BE BEFORE SEEDING) --------------------
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<EquipmentRentalDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        // Додаємо колонку LastOnline до таблиці AspNetUsers, якщо її немає
+        // Це має бути виконано ПЕРЕД SeedRolesAndAdmin, щоб уникнути помилок
+        dbContext.Database.ExecuteSqlRaw(@"
+            IF NOT EXISTS (SELECT * FROM sys.columns 
+                           WHERE object_id = OBJECT_ID(N'[dbo].[AspNetUsers]') 
+                           AND name = 'LastOnline')
+            BEGIN
+                ALTER TABLE [AspNetUsers] 
+                ADD [LastOnline] datetime2 NULL;
+            END
+        ");
+        logger.LogInformation("LastOnline column checked and added if needed.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Не вдалося додати колонку LastOnline: {Message}", ex.Message);
+    }
+}
+
 app.SeedRolesAndAdmin();
 
 // -------------------- FIX MISSING OwnerId COLUMNS --------------------
@@ -89,7 +116,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<EquipmentRentalDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    
+
     try
     {
         // Додаємо колонку OwnerId до таблиці Equipments, якщо її немає
@@ -168,6 +195,8 @@ using (var scope = app.Services.CreateScope())
                     [EquipmentId] int NOT NULL,
                     [OwnerId] nvarchar(450) NOT NULL,
                     [RenterId] nvarchar(450) NOT NULL,
+                    [IsPinned] bit NOT NULL DEFAULT 0,
+                    [IsDeleted] bit NOT NULL DEFAULT 0,
                     CONSTRAINT [PK_ChatRooms] PRIMARY KEY ([Id]),
                     CONSTRAINT [FK_ChatRooms_Equipments_EquipmentId] FOREIGN KEY ([EquipmentId]) REFERENCES [Equipments] ([Id]) ON DELETE CASCADE,
                     CONSTRAINT [FK_ChatRooms_AspNetUsers_OwnerId] FOREIGN KEY ([OwnerId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION,
@@ -176,6 +205,28 @@ using (var scope = app.Services.CreateScope())
                 CREATE INDEX [IX_ChatRooms_EquipmentId] ON [ChatRooms] ([EquipmentId]);
                 CREATE INDEX [IX_ChatRooms_OwnerId] ON [ChatRooms] ([OwnerId]);
                 CREATE INDEX [IX_ChatRooms_RenterId] ON [ChatRooms] ([RenterId]);
+            END
+        ");
+
+        // Додаємо колонку IsPinned до таблиці ChatRooms, якщо її немає
+        dbContext.Database.ExecuteSqlRaw(@"
+            IF NOT EXISTS (SELECT * FROM sys.columns 
+                           WHERE object_id = OBJECT_ID(N'[dbo].[ChatRooms]') 
+                           AND name = 'IsPinned')
+            BEGIN
+                ALTER TABLE [ChatRooms] 
+                ADD [IsPinned] bit NOT NULL DEFAULT 0;
+            END
+        ");
+
+        // Додаємо колонку IsDeleted до таблиці ChatRooms, якщо її немає
+        dbContext.Database.ExecuteSqlRaw(@"
+            IF NOT EXISTS (SELECT * FROM sys.columns 
+                           WHERE object_id = OBJECT_ID(N'[dbo].[ChatRooms]') 
+                           AND name = 'IsDeleted')
+            BEGIN
+                ALTER TABLE [ChatRooms] 
+                ADD [IsDeleted] bit NOT NULL DEFAULT 0;
             END
         ");
 

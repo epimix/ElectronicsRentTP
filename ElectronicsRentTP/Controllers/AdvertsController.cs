@@ -3,6 +3,7 @@ using BusinessLogic.Services;
 using DataAccess.Data.Entities;
 using ElectronicsRentTP.Extensions;
 using ElectronicsRentTP.Models;
+using ElectronicsRentTP.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -105,7 +106,7 @@ namespace ElectronicsRentTP.Controllers
 
             // Перевіряємо доступ: користувач може редагувати тільки свої товари
             // Товари з БД (OwnerId == null або адмін) можуть редагувати тільки адміни
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole(Roles.ADMIN);
             var isFromDatabase = string.IsNullOrEmpty(equipment.OwnerId) ||
                                 equipment.OwnerId == "551b73c1-3601-490c-90bf-5af17a4408d5";
 
@@ -138,7 +139,7 @@ namespace ElectronicsRentTP.Controllers
 
             // Перевіряємо доступ: користувач може редагувати тільки свої товари
             // Товари з БД (OwnerId == null або адмін) можуть редагувати тільки адміни
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole(Roles.ADMIN);
             var isFromDatabase = string.IsNullOrEmpty(existingEquipment.OwnerId) ||
                                 existingEquipment.OwnerId == "551b73c1-3601-490c-90bf-5af17a4408d5";
 
@@ -188,9 +189,19 @@ namespace ElectronicsRentTP.Controllers
             }
 
             var equipment = await _equipmentService.GetById(id);
-            if (equipment == null || equipment.OwnerId != userId)
+            if (equipment == null)
             {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment not found or access denied.", ToastType.danger));
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment not found.", ToastType.danger));
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Перевіряємо доступ: адміни можуть видаляти будь-які товари
+            // Звичайні користувачі можуть видаляти тільки свої товари
+            var isAdmin = User.IsInRole(Roles.ADMIN);
+
+            if (!isAdmin && equipment.OwnerId != userId)
+            {
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("You don't have permission to delete this equipment.", ToastType.danger));
                 return RedirectToAction(nameof(Index));
             }
 

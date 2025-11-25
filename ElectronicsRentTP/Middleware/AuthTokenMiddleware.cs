@@ -50,7 +50,7 @@ namespace ElectronicsRentTP.Middleware
                     var jwtIssuer = _config["JwtOptions:Issuer"];
 
                     var handler = new JwtSecurityTokenHandler();
-                    var key = Encoding.UTF8.GetBytes(jwtKey);
+                    var key = Encoding.UTF8.GetBytes(jwtKey ?? string.Empty);
                     var parameters = new TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
@@ -175,7 +175,8 @@ namespace ElectronicsRentTP.Middleware
                     }
 
                     // Генеруємо новий access JWT з ролями
-                    var newJwt = await GenerateNewJwtToken(user, context);
+                    var userManager = context.RequestServices.GetRequiredService<UserManager<User>>();
+                    var newJwt = await GenerateNewJwtToken(user, context, userManager);
 
                     var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                     var newRefresh = new RefreshToken
@@ -223,13 +224,13 @@ namespace ElectronicsRentTP.Middleware
             await RedirectToRegister(context);
         }
 
-        
 
-        private async Task<string> GenerateNewJwtToken(User user, HttpContext context)
+
+        private async Task<string> GenerateNewJwtToken(User user, HttpContext context, UserManager<User> userManager)
         {
-            var jwtKey = config["JwtOptions:Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
-            var jwtIssuer = config["JwtOptions:Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
-            var jwtAudience = config["JwtOptions:Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
+            var jwtKey = _config["JwtOptions:Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
+            var jwtIssuer = _config["JwtOptions:Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
+            var jwtAudience = _config["JwtOptions:Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
