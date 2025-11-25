@@ -5,6 +5,7 @@ using BusinessLogic.Interfaces;
 using DataAccess.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 
 namespace ElectronicsRentTP.Controllers
@@ -12,13 +13,14 @@ namespace ElectronicsRentTP.Controllers
     public class AccountController : Controller
     {
         private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
         private readonly IUserServices _userService;
         private readonly IJwtService _tokenService;
 
-        public AccountController(UserManager<User> userManager, IJwtService tokenService, IUserServices userService)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IJwtService tokenService, IUserServices userService)
         {
-
             _userManager = userManager;
+            _signInManager = signInManager;
             _tokenService = tokenService;
             _userService = userService;
         }
@@ -110,12 +112,18 @@ namespace ElectronicsRentTP.Controllers
                 var claims = _tokenService.GetClaims(user);
                 var jwtToken = _tokenService.GenerateToken(claims);
 
-
+                // Встановлюємо cookie з правильними опціями
+                var isHttps = Request.IsHttps;
                 Response.Cookies.Append("sessionToken", jwtToken, new CookieOptions
                 {
                     HttpOnly = true,
-
+                    Secure = isHttps, // Secure тільки для HTTPS
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTime.UtcNow.AddHours(24) // Токен на 24 години
                 });
+
+                // Також встановлюємо стандартну автентифікацію ASP.NET Identity
+                await _signInManager.SignInAsync(user, isPersistent: false);
 
 
                 return RedirectToAction("Index", "Home");
@@ -162,6 +170,76 @@ namespace ElectronicsRentTP.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(UserProfileViewModel model, IFormFile? profileImageFile, string? profileImageUrl)
+        {
+            if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            try
+            {
+                // Оновлюємо основні дані
+                if (!string.IsNullOrWhiteSpace(model.FullName))
+                    user.FullName = model.FullName;
+
+                if (model.Birthdate.HasValue)
+                    user.Birthdate = model.Birthdate;
+
+                // Обробка фото профілю
+                string? finalImagePath = null;
+
+                if (profileImageFile != null && profileImageFile.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImageFile.FileName);
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profileImageFile.CopyToAsync(stream);
+                    }
+
+                    finalImagePath = "/uploads/" + fileName;
+                    user.profilePicture = finalImagePath;
+                }
+                else if (!string.IsNullOrWhiteSpace(profileImageUrl))
+                {
+                    user.profilePicture = profileImageUrl;
+                }
+
+                var result = await _userManager.UpdateAsync(user);
+                if (result.Succeeded)
+                {
+                    TempData["Success"] = "Profile updated successfully!";
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Error updating profile: {ex.Message}");
+            }
+
+            return RedirectToAction(nameof(Profile));
         }
     }
 }

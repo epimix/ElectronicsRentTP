@@ -1,6 +1,8 @@
 ﻿using BusinessLogic.Interfaces;
 using DataAccess.Data.Entities;
 using DataAccess.Repositories;
+using DataAccess.Data;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,12 +16,14 @@ namespace BusinessLogic.Services
         private readonly IRepository<Equipment> equipmentRepo;
         private readonly IUserServices userService;
         private readonly IRepository<CartEntity> repo;
+        private readonly EquipmentRentalDbContext ctx;
 
-        public CartService(IRepository<Equipment> equipmentRepo, IUserServices userService, IRepository<CartEntity> repo)
+        public CartService(IRepository<Equipment> equipmentRepo, IUserServices userService, IRepository<CartEntity> repo, EquipmentRentalDbContext ctx)
         {
             this.equipmentRepo = equipmentRepo;
             this.userService = userService;
             this.repo = repo;
+            this.ctx = ctx;
         }
         public async Task AddToCart(string userId, int equipmentId, int quantity)
         {
@@ -33,6 +37,9 @@ namespace BusinessLogic.Services
             var equipment = await equipmentRepo.GetByIdAsync(equipmentId);
             if (equipment == null)
                 throw new ArgumentException("Equipment not found.");
+
+            if (equipment.Quantity < quantity)
+                throw new InvalidOperationException($"Not enough quantity available. Only {equipment.Quantity} items in stock.");
 
             var user = await userService.GetById(userId);
             if (user == null)
@@ -52,7 +59,7 @@ namespace BusinessLogic.Services
             await userService.AddToCart(cartItem);
 
             equipment.Quantity = equipment.Quantity - quantity;
-            await repo.SaveChange();
+            await equipmentRepo.UpdateAsync(equipment);
         }
 
         public async Task<IList<CartEntity>> GetCartItems(string userId)
@@ -64,7 +71,11 @@ namespace BusinessLogic.Services
             // Завантажуємо кожен товар повністю з БД
             foreach (var cartItem in user.Carts)
             {
-                cartItem.Equipment = await equipmentRepo.GetByIdAsync(cartItem.EquipmentId);
+                var equipment = await equipmentRepo.GetByIdAsync(cartItem.EquipmentId);
+                if (equipment != null)
+                {
+                    cartItem.Equipment = equipment;
+                }
             }
 
             return user.Carts;
@@ -81,10 +92,55 @@ namespace BusinessLogic.Services
             var eq = await equipmentRepo.GetByIdAsync(equipmentId);
             if (eq == null)
                 throw new ArgumentException("Equipment not found.");
-            user.Carts.Remove(cartItem);
-
+            
+            // Повертаємо товар на склад
             eq.Quantity = eq.Quantity + cartItem.Quantity;
-            await repo.SaveChange();
+            await equipmentRepo.UpdateAsync(eq);
+
+            // Видаляємо з кошика
+            user.Carts.Remove(cartItem);
+            await userService.Update(user);
+        }
+
+        public async Task UpdateQuantity(string userId, int equipmentId, int newQuantity)
+        {
+            if (newQuantity <= 0)
+                throw new ArgumentException("Quantity must be greater than zero.");
+
+            var user = await userService.GetById(userId);
+            if (user == null)
+                throw new ArgumentException("User not found.");
+
+            var cartItem = user.Carts.FirstOrDefault(c => c.EquipmentId == equipmentId);
+            if (cartItem == null)
+                throw new ArgumentException("Equipment not found in cart.");
+
+            var equipment = await equipmentRepo.GetByIdAsync(equipmentId);
+            if (equipment == null)
+                throw new ArgumentException("Equipment not found.");
+
+            var quantityDifference = newQuantity - cartItem.Quantity;
+
+            if (quantityDifference > 0)
+            {
+                // Збільшуємо кількість - перевіряємо наявність
+                if (equipment.Quantity < quantityDifference)
+                    throw new InvalidOperationException($"Not enough quantity available. Only {equipment.Quantity} items in stock.");
+            }
+
+            // Використовуємо SQL для оновлення без Entity Framework Update
+            var newTotalPrice = equipment.PricePerHour * newQuantity;
+            await ctx.Database.ExecuteSqlRawAsync(
+                "UPDATE CartEntities SET Quantity = {0}, TotalPrice = {1} WHERE UserId = {2} AND EquipmentId = {3}",
+                newQuantity, newTotalPrice, userId, equipmentId);
+            
+            // Оновлюємо кількість товару через SQL (віднімаємо різницю)
+            if (quantityDifference != 0)
+            {
+                await ctx.Database.ExecuteSqlRawAsync(
+                    "UPDATE Equipments SET Quantity = Quantity - {0} WHERE Id = {1}",
+                    quantityDifference, equipmentId);
+            }
         }
     }
 }

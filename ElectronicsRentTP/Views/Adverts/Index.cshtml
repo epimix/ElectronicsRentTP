@@ -1,63 +1,87 @@
 ﻿@model IList<DataAccess.Data.Entities.Equipment>
 
 @{
-    ViewData["Title"] = "My Equipments";
+    ViewData["Title"] = "My Adverts";
 }
 
-<h2 class="mb-4">Мої оголошення</h2>
-
-@if (Model == null || Model.Count == 0)
-{
-    <div class="alert alert-info">
-        Ви ще не створили жодного оголошення.
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Мої оголошення</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Створити нове оголошення
+        </a>
     </div>
-}
-else
-{
-    <div class="row">
-        @foreach (var item in Model)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
 
-                    <img class="card-img-top" src="@item.ImageUrl"
-                         alt="Equipment image"
-                         onerror="this.src='/images/no-image.png'" />
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Ви ще не створили жодного оголошення.
+            <a asp-action="Create" class="alert-link">Створити перше оголошення</a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <img class="card-img-top" src="@(item.ImageUrl ?? "https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg")"
+                             alt="@item.Name"
+                             style="height: 200px; object-fit: cover;"
+                             onerror="this.src='https://thumbs.dreamstime.com/b/no-image-icon-vector-available-picture-symbol-isolated-white-background-suitable-user-interface-element-205805243.jpg'" />
 
-                    <div class="card-body">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-tag"></i> @item.Category?.Name
+                            </p>
 
-                        <h5 class="card-title">@item.Name</h5>
+                            @if (!string.IsNullOrEmpty(item.Description))
+                            {
+                                <p class="card-text flex-grow-1">@(item.Description.Length > 100 ? item.Description.Substring(0, 100) + "..." : item.Description)</p>
+                            }
 
-                        <p class="text-muted">Категорія: @item.Category?.Name</p>
+                            <p class="fw-bold text-primary mb-2">
+                                <i class="bi bi-currency-dollar"></i> @item.PricePerHour за годину
+                            </p>
 
-                        @if (!string.IsNullOrEmpty(item.Description))
-                        {
-                            <p>@item.Description</p>
-                        }
+                            <p class="mb-2">
+                                Кількість: <strong>@item.Quantity</strong>
+                            </p>
 
-                        <p class="fw-bold">₴@item.PricePerHour за годину</p>
+                            <p class="mb-3">
+                                Статус:
+                                <span class="badge @(item.IsAvailable ? "bg-success" : "bg-danger")">
+                                    @(item.IsAvailable ? "Доступно" : "Недоступно")
+                                </span>
+                            </p>
 
-                        <p>
-                            Статус:
-                            <span class="badge @(item.IsAvailable ? "bg-success" : "bg-danger")">
-                                @(item.IsAvailable ? "Доступно" : "Недоступно")
-                            </span>
-                        </p>
+                            <div class="d-flex gap-2 mt-auto">
+                                <a asp-controller="Equipment" asp-action="Details" asp-route-id="@item.Id"
+                                   class="btn btn-primary btn-sm flex-fill" style="border-radius: 8px; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">
+                                    <i class="bi bi-eye"></i> Переглянути
+                                </a>
 
-                        <div class="d-flex gap-2">
-                            <a asp-controller="Equipment" asp-action="Details" asp-route-id="@item.Id"
-                               class="btn btn-primary btn-sm">Переглянути</a>
+                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                   class="btn btn-warning btn-sm" style="border-radius: 8px; font-weight: 600; border: none; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
 
-                            <a asp-controller="Equipment" asp-action="Edit" asp-route-id="@item.Id"
-                               class="btn btn-warning btn-sm">Редагувати</a>
-
-                            <a asp-controller="Equipment" asp-action="Delete" asp-route-id="@item.Id"
-                               class="btn btn-danger btn-sm">Видалити</a>
+                                <form asp-action="Delete" method="post" style="display: inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm" 
+                                            onclick="return confirm('Ви впевнені, що хочете видалити це оголошення?')"
+                                            style="border-radius: 8px; font-weight: 600; border: none; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-
                     </div>
                 </div>
-            </div>
-        }
-    </div>
-}
+            }
+        </div>
+    }
+</div>

@@ -13,8 +13,10 @@ namespace BusinessLogic.Configure
     {
         public MapperProfile()
         {
-            CreateMap<EquipmentDTO, Equipment>().ReverseMap();
-
+            CreateMap<EquipmentDTO, Equipment>();
+            CreateMap<Equipment, EquipmentDTO>()
+                .ForMember(dest => dest.OwnerName, opt => opt.Ignore())
+                .ForMember(dest => dest.OwnerAvatarUrl, opt => opt.Ignore());
         }
     }
 }

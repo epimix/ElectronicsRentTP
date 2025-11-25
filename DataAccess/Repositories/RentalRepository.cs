@@ -32,6 +32,13 @@ namespace DataAccess.Repositories
             return await query.FirstOrDefaultAsync(r => r.Id == id);
         }
 
+        public async Task<Rental?> GetByIdForUpdateAsync(int id)
+        {
+            // Завантажуємо БЕЗ AsNoTracking для можливості оновлення
+            return await _ctx.Rentals
+                .FirstOrDefaultAsync(r => r.Id == id);
+        }
+
         public async Task<List<Rental>> GetByUserIdAsync(string userId, int skip, int take)
         {
             return await _ctx.Rentals
@@ -113,8 +120,8 @@ namespace DataAccess.Repositories
                 .ToListAsync();
 
         }
-       public async Task<int> GetRentalCountByStatus(string userId, RentalStatus? status, int page, int pageSize = 10) 
-       {
+        public async Task<int> GetRentalCountByStatus(string userId, RentalStatus? status, int page, int pageSize = 10)
+        {
             return await _ctx.Rentals
                .AsNoTracking()
                .Where(r => r.UserId == userId && (status == null || r.Status == status))

@@ -21,7 +21,7 @@ namespace BusinessLogic.Interfaces
         Task<(bool Success, string ErrorMessage)> UpdateRentalAsync(int id, string currentUserId, Action<Rental> updateAction);
         Task<(bool Success, string ErrorMessage)> DeleteRentalAsync(int id, string currentUserId);
 
-        Task ConfirmRental(int rentalId);
+        Task ConfirmRental(int rentalId, string? ownerId = null);
         Task CancelRental(int rentalId); // для відміни замовником
         Task RejectRental(int rentalId); // для відміни продавцем
 

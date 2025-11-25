@@ -72,6 +72,10 @@ namespace BusinessLogic.Services
 
             await _balanceService.Payment(userId, totalPrice);
 
+            // Якщо товар з БД (OwnerId == null або адмін), автоматично підтверджуємо
+            var isFromDatabase = string.IsNullOrEmpty(equipment.OwnerId) || equipment.OwnerId == "551b73c1-3601-490c-90bf-5af17a4408d5";
+            var initialStatus = isFromDatabase ? RentalStatus.Approved : RentalStatus.Pending;
+
             var rental = new Rental
             {
                 EquipmentId = equipment.Id,
@@ -81,12 +85,29 @@ namespace BusinessLogic.Services
                 Description = model.Description,
                 PaymentType = model.PaymentType,
                 EndDate = model.EndDate,
-                Status = RentalStatus.Pending,
+                Status = initialStatus,
                 TotalPrice = totalPrice
             };
 
             await _rentalRepository.AddAsync(rental);
             await _rentalRepository.SaveChangesAsync();
+
+            // Якщо автоматично підтверджено, зменшуємо кількість
+            if (isFromDatabase && equipment.Quantity > 0)
+            {
+                equipment.Quantity -= 1;
+                if (equipment.Quantity == 0)
+                {
+                    equipment.IsAvailable = false;
+                }
+                await _equipmentService.UpdateEquipment(equipment);
+
+                // Виплачуємо власнику (якщо є)
+                if (!string.IsNullOrEmpty(equipment.OwnerId))
+                {
+                    await _balanceService.OwnerPay(equipment.OwnerId, totalPrice);
+                }
+            }
 
             return (true, string.Empty, rental);
         }
@@ -176,16 +197,34 @@ namespace BusinessLogic.Services
                 ? (true, string.Empty)
                 : (false, "Failed to delete rental.");
         }
-        public async Task ConfirmRental(int rentalId)
+        public async Task ConfirmRental(int rentalId, string? ownerId = null)
         {
-            var rental = await _rentalRepository.GetByIdAsync(rentalId);
-            if (rental != null)
+            // Завантажуємо Rental БЕЗ AsNoTracking для можливості оновлення
+            var rental = await _rentalRepository.GetByIdForUpdateAsync(rentalId);
+            if (rental == null)
+                throw new InvalidOperationException("Rental not found.");
+
+            // Перевіряємо, чи користувач має право підтверджувати цей rental
+            if (!string.IsNullOrEmpty(ownerId) && rental.OwnerId != ownerId)
+                throw new UnauthorizedAccessException("You don't have permission to approve this rental.");
+
+            await _balanceService.OwnerPay(rental.OwnerId ?? "", rental.TotalPrice);
+            rental.Status = RentalStatus.Approved;
+
+            // Зменшуємо кількість товару - завантажуємо окремо щоб уникнути tracking конфлікту
+            var equipment = await _equipmentService.GetById(rental.EquipmentId);
+            if (equipment != null && equipment.Quantity > 0)
             {
-                await _balanceService.OwnerPay(rental.OwnerId, rental.TotalPrice);
-                rental.Status = RentalStatus.Approved;
-                _rentalRepository.Update(rental);
-                await _rentalRepository.SaveChangesAsync();
+                equipment.Quantity -= 1;
+                if (equipment.Quantity == 0)
+                {
+                    equipment.IsAvailable = false;
+                }
+                await _equipmentService.UpdateEquipment(equipment);
             }
+
+            _rentalRepository.Update(rental);
+            await _rentalRepository.SaveChangesAsync();
         }
         public async Task CancelRental(int id)
         {

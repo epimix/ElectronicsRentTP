@@ -60,7 +60,7 @@ namespace DataAccess.Repositories
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
             params string[]? includes)
         {
-            var query = set.AsQueryable();
+            var query = set.AsQueryable().AsNoTracking();
 
             if (filtering != null)
                 query = query.Where(filtering);
