@@ -122,13 +122,17 @@ namespace BusinessLogic.Services
 
         public async Task AddEquip(Equipment equipment)
         {
+            // Якщо OwnerId порожній або null, це товар з бази даних - не додаємо до MyAdverts користувача
+            if (string.IsNullOrEmpty(equipment.OwnerId))
+                return;
+
             var user = await ctx.Users
             .Include(u => u.MyAdverts)
             .FirstOrDefaultAsync(u => u.Id == equipment.OwnerId);
-            
+
             if (user == null)
                 throw new Exception("User not found");
-            
+
             // Дозволяємо всім користувачам додавати товари
             user.MyAdverts.Add(equipment);
             await ctx.SaveChangesAsync();

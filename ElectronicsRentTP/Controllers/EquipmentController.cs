@@ -39,7 +39,7 @@ namespace ElectronicsRentTP.Controllers
             this.userManager = userManager;
             this.rentalService = rentalService;
         }
-        
+
         public async Task<IActionResult> Index(
             int page = 1,
             int? categoryId = null,
@@ -159,9 +159,53 @@ namespace ElectronicsRentTP.Controllers
             return RedirectToAction("Details", new { id = equipmentId });
         }
 
+        // Create для адміна
+        [HttpGet]
+        [Authorize(Roles = Roles.ADMIN)]
+        public IActionResult Create()
+        {
+            SetCategoriesToViewBag();
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = Roles.ADMIN)]
+        public async Task<IActionResult> Create(EquipmentDTO equipment)
+        {
+            if (!ModelState.IsValid)
+            {
+                SetCategoriesToViewBag();
+                return View(equipment);
+            }
+
+            try
+            {
+                Equipment equ = mapper.Map<Equipment>(equipment);
+                // For admin-created equipment, OwnerId can be null or set to admin user
+                var userId = userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData.Set(WebConstants.ToastMessage, new ToastModel("User not found.", ToastType.danger));
+                    SetCategoriesToViewBag();
+                    return View(equipment);
+                }
+                equ.OwnerId = userId;
+                await eq.AddEquipment(equ, userId);
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment created successfully!", ToastType.success));
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData.Set(WebConstants.ToastMessage, new ToastModel(ex.Message, ToastType.danger));
+                SetCategoriesToViewBag();
+                return View(equipment);
+            }
+        }
+
         // Edit для адміна
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Edit(int id)
         {
             var equipment = await eq.GetById(id);
@@ -173,7 +217,7 @@ namespace ElectronicsRentTP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.ADMIN)]
         public async Task<IActionResult> Edit(EquipmentDTO equipment)
         {
             if (!ModelState.IsValid)
@@ -195,6 +239,31 @@ namespace ElectronicsRentTP.Controllers
             }
 
             TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment updated successfully!", ToastType.success));
+            return RedirectToAction("Index");
+        }
+
+        // Delete для адміна
+        [HttpGet]
+        [Authorize(Roles = Roles.ADMIN)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var equipment = await eq.GetById(id);
+            if (equipment == null)
+            {
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment not found.", ToastType.danger));
+                return RedirectToAction("Index");
+            }
+
+            try
+            {
+                await eq.DeleteEquipment(id);
+                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment deleted successfully!", ToastType.success));
+            }
+            catch (Exception ex)
+            {
+                TempData.Set(WebConstants.ToastMessage, new ToastModel(ex.Message, ToastType.danger));
+            }
+
             return RedirectToAction("Index");
         }
 

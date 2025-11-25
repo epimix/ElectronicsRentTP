@@ -54,7 +54,8 @@ namespace ElectronicsRentTP.Controllers
 
                     LastMessage = lastMsg?.Text ?? "",
                     LastMessageTime = lastMsg?.SentAt,
-                    IsMyMessage = lastMsg?.SenderId == userId
+                    IsMyMessage = lastMsg?.SenderId == userId,
+                    IsPinned = c.IsPinned
                 };
             }).OrderByDescending(c => c.IsPinned)
     .ThenByDescending(c => c.LastMessageTime)
