@@ -40,7 +40,6 @@ namespace ElectronicsRentTP.Controllers
 
         // POST: /Cart/Add
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(int equipmentId, int quantity = 1)
         {
             var userId = _userManager.GetUserId(User);
@@ -65,7 +64,6 @@ namespace ElectronicsRentTP.Controllers
 
         // POST: /Cart/Remove
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Remove(int equipmentId)
         {
             var userId = _userManager.GetUserId(User);
@@ -90,7 +88,6 @@ namespace ElectronicsRentTP.Controllers
 
         // POST: /Cart/Clear
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Clear()
         {
             var userId = _userManager.GetUserId(User);
