@@ -10,9 +10,10 @@ namespace BusinessLogic.Interfaces
     public interface ICategoryService
     {
         Task<IList<EquipmentCategory>> GetAll(
-    string? ByName,
-    int pageNumber
-    );
+            string? ByName,
+            int pageNumber
+        );
+        Task<IList<EquipmentCategory>> GetAll();
         Task<EquipmentCategory?> GetById(int id);
         Task AddEquipment(EquipmentCategory cat);
         Task UpdateEquipment(EquipmentCategory cat);

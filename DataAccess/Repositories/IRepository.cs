@@ -16,6 +16,7 @@ namespace DataAccess.Repositories
             Expression<Func<T, bool>>? filtering = null,
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
             params string[]? includes);
+        Task<IList<T>> GetAllAsync();
         Task<int> CountAsync(Expression<Func<T, bool>>? filtering = null);
         Task<T?> GetByIdAsync(int id);
         Task AddAsync(T entity);

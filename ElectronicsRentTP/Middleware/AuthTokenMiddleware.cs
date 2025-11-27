@@ -64,10 +64,25 @@ namespace ElectronicsRentTP.Middleware
                     ClaimsPrincipal? principal = null;
                     string? userId = null;
 
-                    principal = handler.ValidateToken(t, parameters, out _);
-                    userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    try
+                    {
+                        principal = handler.ValidateToken(t, parameters, out _);
+                        userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                    context.User = principal;
+                        context.User = principal;
+                    }
+                    catch (SecurityTokenExpiredException)
+                    {
+                        context.Response.Cookies.Delete("sessionToken");
+                        context.Response.Redirect("/Account/Login");
+                        return;
+                    }
+                    catch
+                    {
+                        context.Response.Cookies.Delete("sessionToken");
+                        context.Response.Redirect("/Account/Login");
+                        return;
+                    }
                 }
 
                 await _next(context);

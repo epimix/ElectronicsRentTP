@@ -17,23 +17,20 @@ namespace ElectronicsRentTP.Controllers
     public class AdvertsController : Controller
     {
         private readonly IAdvertsService _advertsService;
-        private readonly IEquipmentService _equipmentService;
         private readonly UserManager<User> _userManager;
-        private readonly EquipmentRentalDbContext _ctx;
         private readonly IMapper _mapper;
+        private readonly ICategoryService categoryService;
 
         public AdvertsController(
             IAdvertsService advertsService,
-            IEquipmentService equipmentService,
             UserManager<User> userManager,
-            EquipmentRentalDbContext ctx,
-            IMapper mapper)
+            IMapper mapper,
+            ICategoryService categoryService)
         {
             _advertsService = advertsService;
-            _equipmentService = equipmentService;
             _userManager = userManager;
-            _ctx = ctx;
             _mapper = mapper;
+            this.categoryService = categoryService;
         }
 
         public async Task<IActionResult> Index()
@@ -57,170 +54,66 @@ namespace ElectronicsRentTP.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(EquipmentDTO equipment)
+        public async Task<IActionResult> Create(EquipmentDTO dto)
         {
             if (!ModelState.IsValid)
             {
-                SetCategoriesToViewBag();
-                return View(equipment);
+                ViewBag.Categories = new SelectList(await categoryService.GetAll());
+                return View(dto);
             }
 
             var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            await _advertsService.CreateAdvert(dto, userId);
 
-            try
-            {
-                Equipment equ = _mapper.Map<Equipment>(equipment);
-                equ.OwnerId = userId;
-                await _equipmentService.AddEquipment(equ, userId);
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment created successfully!", ToastType.success));
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel(ex.Message, ToastType.danger));
-                SetCategoriesToViewBag();
-                return View(equipment);
-            }
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            var isAdmin = User.IsInRole("Admin");
 
-            var equipment = await _equipmentService.GetById(id);
-            if (equipment == null)
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment not found.", ToastType.danger));
+            var eq = await _advertsService.GetById(id);
+
+            if (eq == null || !_advertsService.CanEdit(eq, userId, isAdmin))
                 return RedirectToAction(nameof(Index));
-            }
-
-            // Перевіряємо доступ: користувач може редагувати тільки свої товари
-            // Товари з БД (OwnerId == null або адмін) можуть редагувати тільки адміни
-            var isAdmin = User.IsInRole(Roles.ADMIN);
-            var isFromDatabase = string.IsNullOrEmpty(equipment.OwnerId) ||
-                                equipment.OwnerId == "551b73c1-3601-490c-90bf-5af17a4408d5";
-
-            if (!isAdmin && (isFromDatabase || equipment.OwnerId != userId))
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("You don't have permission to edit this equipment.", ToastType.danger));
-                return RedirectToAction(nameof(Index));
-            }
 
             SetCategoriesToViewBag();
-            return View(_mapper.Map<EquipmentDTO>(equipment));
+
+            return View(_mapper.Map<EquipmentDTO>(eq));
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(EquipmentDTO equipment)
+        public async Task<IActionResult> Edit(EquipmentDTO dto)
         {
-            var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var existingEquipment = await _equipmentService.GetById(equipment.Id);
-            if (existingEquipment == null)
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment not found.", ToastType.danger));
-                return RedirectToAction(nameof(Index));
-            }
-
-            // Перевіряємо доступ: користувач може редагувати тільки свої товари
-            // Товари з БД (OwnerId == null або адмін) можуть редагувати тільки адміни
-            var isAdmin = User.IsInRole(Roles.ADMIN);
-            var isFromDatabase = string.IsNullOrEmpty(existingEquipment.OwnerId) ||
-                                existingEquipment.OwnerId == "551b73c1-3601-490c-90bf-5af17a4408d5";
-
-            if (!isAdmin && (isFromDatabase || existingEquipment.OwnerId != userId))
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("You don't have permission to edit this equipment.", ToastType.danger));
-                return RedirectToAction(nameof(Index));
-            }
-
             if (!ModelState.IsValid)
             {
                 SetCategoriesToViewBag();
-                return View(equipment);
+                return View(dto);
             }
 
-            try
-            {
-                // Оновлюємо існуючий об'єкт замість створення нового
-                existingEquipment.Name = equipment.Name;
-                existingEquipment.Description = equipment.Description;
-                existingEquipment.CategoryId = equipment.CategoryId;
-                existingEquipment.PricePerHour = equipment.PricePerHour;
-                existingEquipment.Quantity = equipment.Quantity;
-                existingEquipment.ImageUrl = equipment.ImageUrl;
-                // OwnerId залишаємо без змін
-
-                await _equipmentService.UpdateEquipment(existingEquipment);
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment updated successfully!", ToastType.success));
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel(ex.Message, ToastType.danger));
-                SetCategoriesToViewBag();
-                return View(equipment);
-            }
+            await _advertsService.UpdateAdvert(dto);
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            var isAdmin = User.IsInRole("Admin");
 
-            var equipment = await _equipmentService.GetById(id);
-            if (equipment == null)
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment not found.", ToastType.danger));
-                return RedirectToAction(nameof(Index));
-            }
+            var eq = await _advertsService.GetById(id);
 
-            // Перевіряємо доступ: адміни можуть видаляти будь-які товари
-            // Звичайні користувачі можуть видаляти тільки свої товари
-            var isAdmin = User.IsInRole(Roles.ADMIN);
-
-            if (!isAdmin && equipment.OwnerId != userId)
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("You don't have permission to delete this equipment.", ToastType.danger));
-                return RedirectToAction(nameof(Index));
-            }
-
-            try
-            {
-                await _equipmentService.DeleteEquipment(id);
-                TempData.Set(WebConstants.ToastMessage, new ToastModel("Equipment deleted successfully!", ToastType.success));
-            }
-            catch (Exception ex)
-            {
-                TempData.Set(WebConstants.ToastMessage, new ToastModel(ex.Message, ToastType.danger));
-            }
+            if (eq != null && isAdmin)
+                await _advertsService.DeleteAdvert(id);
 
             return RedirectToAction(nameof(Index));
         }
 
-        private void SetCategoriesToViewBag()
+        private async void SetCategoriesToViewBag()
         {
-            var categories = new SelectList(_ctx.EquipmentCategories.ToList(), "Id", "Name");
+            var categories = new SelectList( await categoryService.GetAll());
             ViewBag.Categories = categories;
         }
     }
