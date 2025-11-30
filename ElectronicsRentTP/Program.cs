@@ -126,18 +126,27 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        // Додаємо колонку LastOnline до таблиці AspNetUsers, якщо її немає
-        // Це має бути виконано ПЕРЕД SeedRolesAndAdmin, щоб уникнути помилок
-        dbContext.Database.ExecuteSqlRaw(@"
-            IF NOT EXISTS (SELECT * FROM sys.columns 
-                           WHERE object_id = OBJECT_ID(N'[dbo].[AspNetUsers]') 
-                           AND name = 'LastOnline')
-            BEGIN
-                ALTER TABLE [AspNetUsers] 
-                ADD [LastOnline] datetime2 NULL;
-            END
-        ");
-        logger.LogInformation("LastOnline column checked and added if needed.");
+        // Перевіряємо, чи можемо підключитися до бази
+        var canConnect = dbContext.Database.CanConnect();
+        if (!canConnect)
+        {
+            logger.LogWarning("Cannot connect to database. Skipping database initialization.");
+        }
+        else
+        {
+            // Додаємо колонку LastOnline до таблиці AspNetUsers, якщо її немає
+            // Це має бути виконано ПЕРЕД SeedRolesAndAdmin, щоб уникнути помилок
+            dbContext.Database.ExecuteSqlRaw(@"
+                IF NOT EXISTS (SELECT * FROM sys.columns 
+                               WHERE object_id = OBJECT_ID(N'[dbo].[AspNetUsers]') 
+                               AND name = 'LastOnline')
+                BEGIN
+                    ALTER TABLE [AspNetUsers] 
+                    ADD [LastOnline] datetime2 NULL;
+                END
+            ");
+            logger.LogInformation("LastOnline column checked and added if needed.");
+        }
     }
     catch (Exception ex)
     {
@@ -145,6 +154,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Seed roles and admin - не блокує запуск, якщо база недоступна
 app.SeedRolesAndAdmin();
 
 // -------------------- FIX MISSING OwnerId COLUMNS --------------------
