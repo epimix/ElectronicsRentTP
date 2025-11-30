@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class checkt1234 : Migration
+    public partial class someeTest : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -466,7 +466,7 @@ namespace DataAccess.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "Balance", "Birthdate", "ConcurrencyStamp", "Email", "EmailConfirmed", "FullName", "LastOnline", "LockoutEnabled", "LockoutEnd", "Login", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName", "profilePicture" },
-                values: new object[] { "551b73c1-3601-490c-90bf-5af17a4408d5", 0, 0m, null, "16bf9ccb-16ad-4792-9bc7-f5b1f1a73531", "admin9@gmail.com", true, "Андрій Дячук", null, false, null, "Андрій Дячук", "ADMIN9@GMAIL.COM", "ADMIN9@GMAIL.COM", "AQAAAAIAAYagAAAAEK6FxvE831J99W74/A3iTpQPQPsPkG/51CSa6eQdxsWptOvDNu9a4Q4BE+AFKDfzfw==", null, false, "5805ee4e-ec29-433a-b3de-698a84677717", false, "admin9@gmail.com", null });
+                values: new object[] { "551b73c1-3601-490c-90bf-5af17a4408d5", 0, 0m, null, "bfc0a70a-1d3d-4f54-8fbb-1f2ea42af650", "admin9@gmail.com", true, "Андрій Дячук", null, false, null, "Андрій Дячук", "ADMIN9@GMAIL.COM", "ADMIN9@GMAIL.COM", "AQAAAAIAAYagAAAAEMjSlXki03B9r5b2uMi95wXOQ/NL6789QWpdu52kBHsjhQrRJfuYs1v5kg/aWj4qOg==", null, false, "4a4e6a24-3ffe-4c59-adee-4577f5eba8ba", false, "admin9@gmail.com", null });
 
             migrationBuilder.InsertData(
                 table: "EquipmentCategories",

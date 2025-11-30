@@ -20,8 +20,17 @@ using System;
 var builder = WebApplication.CreateBuilder(args);
 
 // -------------------- DATABASE --------------------
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new Exception("No connection string found.");
+// Azure App Service uses different formats for connection strings
+// Try multiple ways to get the connection string
+var connectionString = 
+    // Azure Connection Strings section (format: SQLCONNSTR_DefaultConnection or SQLAZURECONNSTR_DefaultConnection)
+    Environment.GetEnvironmentVariable("SQLCONNSTR_DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection")
+    // Standard environment variable format
+    ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+    // Configuration (appsettings.json or Azure App Settings)
+    ?? builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new Exception("No connection string found. Please configure DefaultConnection in Azure App Service Connection Strings or Application Settings.");
 
 builder.Services.AddDbContext<EquipmentRentalDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -74,6 +83,33 @@ builder.Services.AddSignalR();
 
 // -------------------- BUILD APP --------------------
 var app = builder.Build();
+
+// -------------------- LOG CONNECTION STRING (for debugging) --------------------
+using (var scope = app.Services.CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    // Log which source was used
+    if (Environment.GetEnvironmentVariable("SQLCONNSTR_DefaultConnection") != null)
+        logger.LogInformation("Connection string source: Azure Connection Strings (SQLCONNSTR)");
+    else if (Environment.GetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection") != null)
+        logger.LogInformation("Connection string source: Azure Connection Strings (SQLAZURECONNSTR)");
+    else if (Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection") != null)
+        logger.LogInformation("Connection string source: Environment variable (ConnectionStrings__DefaultConnection)");
+    else
+        logger.LogInformation("Connection string source: Configuration (appsettings.json)");
+    
+    // Log connection string (masked)
+    var connectionStringForLog = connectionString;
+    if (connectionString.Contains("Password="))
+    {
+        var pwdIndex = connectionString.IndexOf("Password=");
+        var pwdEnd = connectionString.IndexOf(";", pwdIndex);
+        if (pwdEnd == -1) pwdEnd = connectionString.Length;
+        connectionStringForLog = connectionString.Substring(0, pwdIndex) + "Password=***" + connectionString.Substring(pwdEnd);
+    }
+    logger.LogInformation("Using connection string: {ConnectionString}", connectionStringForLog);
+}
 
 // -------------------- MIDDLEWARE --------------------
 if (!app.Environment.IsDevelopment())
@@ -247,6 +283,41 @@ using (var scope = app.Services.CreateScope())
                 );
                 CREATE INDEX [IX_ChatMessages_ChatRoomId] ON [ChatMessages] ([ChatRoomId]);
                 CREATE INDEX [IX_ChatMessages_SenderId] ON [ChatMessages] ([SenderId]);
+            END
+        ");
+
+        // Створюємо таблицю Complaints, якщо її немає
+        dbContext.Database.ExecuteSqlRaw(@"
+            IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Complaints]') AND type in (N'U'))
+            BEGIN
+                CREATE TABLE [Complaints] (
+                    [Id] int NOT NULL IDENTITY,
+                    [ReporterId] nvarchar(450) NOT NULL,
+                    [TargetUserId] nvarchar(450) NOT NULL,
+                    [RentalId] int NOT NULL,
+                    [Message] nvarchar(max) NOT NULL,
+                    [AdminComment] nvarchar(max) NULL,
+                    [Created] datetime2 NOT NULL,
+                    [Resolved] bit NOT NULL,
+                    CONSTRAINT [PK_Complaints] PRIMARY KEY ([Id]),
+                    CONSTRAINT [FK_Complaints_AspNetUsers_ReporterId] FOREIGN KEY ([ReporterId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION,
+                    CONSTRAINT [FK_Complaints_AspNetUsers_TargetUserId] FOREIGN KEY ([TargetUserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION,
+                    CONSTRAINT [FK_Complaints_Rentals_RentalId] FOREIGN KEY ([RentalId]) REFERENCES [Rentals] ([Id]) ON DELETE NO ACTION
+                );
+                CREATE INDEX [IX_Complaints_RentalId] ON [Complaints] ([RentalId]);
+                CREATE INDEX [IX_Complaints_ReporterId] ON [Complaints] ([ReporterId]);
+                CREATE INDEX [IX_Complaints_TargetUserId] ON [Complaints] ([TargetUserId]);
+            END
+        ");
+
+        // Додаємо колонку AdminComment до таблиці Complaints, якщо її немає
+        dbContext.Database.ExecuteSqlRaw(@"
+            IF NOT EXISTS (SELECT * FROM sys.columns 
+                           WHERE object_id = OBJECT_ID(N'[dbo].[Complaints]') 
+                           AND name = 'AdminComment')
+            BEGIN
+                ALTER TABLE [Complaints] 
+                ADD [AdminComment] nvarchar(max) NULL;
             END
         ");
 
