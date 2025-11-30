@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(EquipmentRentalDbContext))]
-    [Migration("20251125195655_checkt1234")]
-    partial class checkt1234
+    [Migration("20251130134947_someeTest")]
+    partial class someeTest
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -857,7 +857,7 @@ namespace DataAccess.Migrations
                             Id = "551b73c1-3601-490c-90bf-5af17a4408d5",
                             AccessFailedCount = 0,
                             Balance = 0m,
-                            ConcurrencyStamp = "16bf9ccb-16ad-4792-9bc7-f5b1f1a73531",
+                            ConcurrencyStamp = "bfc0a70a-1d3d-4f54-8fbb-1f2ea42af650",
                             Email = "admin9@gmail.com",
                             EmailConfirmed = true,
                             FullName = "Андрій Дячук",
@@ -865,9 +865,9 @@ namespace DataAccess.Migrations
                             Login = "Андрій Дячук",
                             NormalizedEmail = "ADMIN9@GMAIL.COM",
                             NormalizedUserName = "ADMIN9@GMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEK6FxvE831J99W74/A3iTpQPQPsPkG/51CSa6eQdxsWptOvDNu9a4Q4BE+AFKDfzfw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMjSlXki03B9r5b2uMi95wXOQ/NL6789QWpdu52kBHsjhQrRJfuYs1v5kg/aWj4qOg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "5805ee4e-ec29-433a-b3de-698a84677717",
+                            SecurityStamp = "4a4e6a24-3ffe-4c59-adee-4577f5eba8ba",
                             TwoFactorEnabled = false,
                             UserName = "admin9@gmail.com"
                         });
