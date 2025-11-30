@@ -78,7 +78,10 @@ namespace DataAccess.Repositories
 
             return await query.ToListAsync();
         }
-
+        public async Task<IList<T>> GetAllAsync()
+        {
+           return await set.AsNoTracking().ToListAsync();
+        }
         public async Task<int> CountAsync(Expression<Func<T, bool>>? filtering = null)
         {
             var query = set.AsQueryable();

@@ -72,7 +72,6 @@ namespace BusinessLogic.Services
 
             await _balanceService.Payment(userId, totalPrice);
 
-            // Якщо товар з БД (OwnerId == null або адмін), автоматично підтверджуємо
             var isFromDatabase = string.IsNullOrEmpty(equipment.OwnerId) || equipment.OwnerId == "551b73c1-3601-490c-90bf-5af17a4408d5";
             var initialStatus = isFromDatabase ? RentalStatus.Approved : RentalStatus.Pending;
 
@@ -92,7 +91,6 @@ namespace BusinessLogic.Services
             await _rentalRepository.AddAsync(rental);
             await _rentalRepository.SaveChangesAsync();
 
-            // Якщо автоматично підтверджено, зменшуємо кількість
             if (isFromDatabase && equipment.Quantity > 0)
             {
                 equipment.Quantity -= 1;
@@ -102,7 +100,6 @@ namespace BusinessLogic.Services
                 }
                 await _equipmentService.UpdateEquipment(equipment);
 
-                // Виплачуємо власнику (якщо є)
                 if (!string.IsNullOrEmpty(equipment.OwnerId))
                 {
                     await _balanceService.OwnerPay(equipment.OwnerId, totalPrice);
@@ -114,6 +111,8 @@ namespace BusinessLogic.Services
 
         public async Task<List<RentalListItemViewModel>> GetUserRentalsAsync(string userId, int? page = 1, int? pageSize = 10)
         {
+            await AutoCompleteRentalsAsync();
+
             var skip = ((page ?? 1) - 1) * (pageSize ?? 10);
             var rentals = await _rentalRepository.GetByUserIdAsync(userId, skip, pageSize ?? 10);
 
@@ -131,6 +130,8 @@ namespace BusinessLogic.Services
 
         public async Task<RentalDetailsViewModel?> GetRentalDetailsAsync(int id, string currentUserId)
         {
+            await AutoCompleteRentalsAsync();
+
             var rental = await _rentalRepository.GetByIdAsync(id,
                 r => r.Equipment,
                 r => r.User,
@@ -199,19 +200,16 @@ namespace BusinessLogic.Services
         }
         public async Task ConfirmRental(int rentalId, string? ownerId = null)
         {
-            // Завантажуємо Rental БЕЗ AsNoTracking для можливості оновлення
             var rental = await _rentalRepository.GetByIdForUpdateAsync(rentalId);
             if (rental == null)
                 throw new InvalidOperationException("Rental not found.");
 
-            // Перевіряємо, чи користувач має право підтверджувати цей rental
             if (!string.IsNullOrEmpty(ownerId) && rental.OwnerId != ownerId)
                 throw new UnauthorizedAccessException("You don't have permission to approve this rental.");
 
             await _balanceService.OwnerPay(rental.OwnerId ?? "", rental.TotalPrice);
             rental.Status = RentalStatus.Approved;
 
-            // Зменшуємо кількість товару - завантажуємо окремо щоб уникнути tracking конфлікту
             var equipment = await _equipmentService.GetById(rental.EquipmentId);
             if (equipment != null && equipment.Quantity > 0)
             {
@@ -279,7 +277,6 @@ namespace BusinessLogic.Services
         public async Task AutoCompleteRentalsAsync()
         {
             var now = DateTime.UtcNow;
-
             var rentals = await _rentalRepository.GetExpiredActiveRentalsAsync(now);
 
             foreach (var rental in rentals)
@@ -287,6 +284,7 @@ namespace BusinessLogic.Services
                 rental.Status = RentalStatus.Completed;
                 _rentalRepository.Update(rental);
             }
+
             if (rentals.Count > 0)
                 await _rentalRepository.SaveChangesAsync();
         }

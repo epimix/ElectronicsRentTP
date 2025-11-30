@@ -14,15 +14,13 @@ namespace ElectronicsRentTP.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private readonly IUserServices _userService;
-        private readonly IJwtService _tokenService;
+        private readonly IAccountService _accountService;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IJwtService tokenService, IUserServices userService)
+        public AccountController(IAccountService _accountService, UserManager<User> userManager, SignInManager<User> signInManager)
         {
+            this._accountService = _accountService;
             _userManager = userManager;
             _signInManager = signInManager;
-            _tokenService = tokenService;
-            _userService = userService;
         }
 
         [HttpGet]
@@ -44,52 +42,18 @@ namespace ElectronicsRentTP.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            string? finalImagePath = null;
-
-
-            if (model.profileImageFile != null && model.profileImageFile.Length > 0)
-            {
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
-
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.profileImageFile.FileName);
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await model.profileImageFile.CopyToAsync(stream);
-                }
-
-                finalImagePath = "/uploads/" + fileName;
-            }
-
-            else if (!string.IsNullOrWhiteSpace(model.profileImageUrl))
-            {
-                finalImagePath = model.profileImageUrl;
-            }
-
-            var user = new User
-            {
-                UserName = model.Email,
-                Email = model.Email,
-                FullName = model.FullName,
-                Birthdate = model.Birthdate,
-                profilePicture = finalImagePath
-            };
-
             try
             {
-                await _userService.Register(user, model.Password);
-
-                return RedirectToAction("Login", "Account");
+                await _accountService.Register(model);
+                return RedirectToAction("Login");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                ModelState.AddModelError("", ex.Message);
                 return View(model);
             }
         }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -104,36 +68,32 @@ namespace ElectronicsRentTP.Controllers
 
             try
             {
+                var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-                var user = await _userService.Login(model.Email, model.Password,
-                                                    HttpContext.Connection.RemoteIpAddress?.ToString());
+                var (user, jwtToken, refreshToken) =
+                    await _accountService.Login(model, ip);
 
-
-                var claims = _tokenService.GetClaims(user);
-                var jwtToken = _tokenService.GenerateToken(claims);
-
-                // Встановлюємо cookie з правильними опціями
                 var isHttps = Request.IsHttps;
+
                 Response.Cookies.Append("sessionToken", jwtToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = isHttps, // Secure тільки для HTTPS
+                    Secure = isHttps,
                     SameSite = SameSiteMode.Lax,
-                    Expires = DateTime.UtcNow.AddHours(24) // Токен на 24 години
+                    Expires = DateTime.UtcNow.AddHours(24)
                 });
 
-                // Також встановлюємо стандартну автентифікацію ASP.NET Identity
                 await _signInManager.SignInAsync(user, isPersistent: false);
-
 
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                ModelState.AddModelError("", ex.Message);
                 return View(model);
             }
         }
+
         public IActionResult Logout()
         {
             if (Request.Cookies.ContainsKey("sessionToken"))
@@ -148,26 +108,11 @@ namespace ElectronicsRentTP.Controllers
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
-            var model = new UserProfileViewModel
-            {
-                IsAuthenticated = User?.Identity?.IsAuthenticated ?? false
-            };
-
-            if (!model.IsAuthenticated)
-            {
-                return View(model);
-            }
+            if (!User.Identity?.IsAuthenticated ?? false)
+                return View(new UserProfileViewModel { IsAuthenticated = false });
 
             var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                model.FullName = user.FullName;
-                model.Email = user.Email;
-                model.Birthdate = user.Birthdate;
-                var roles = await _userManager.GetRolesAsync(user);
-                model.Roles = roles.ToList();
-                model.ProfilePicture = user.profilePicture;
-            }
+            var model = await _accountService.GetProfile(user);
 
             return View(model);
         }
@@ -176,67 +121,19 @@ namespace ElectronicsRentTP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateProfile(UserProfileViewModel model, IFormFile? profileImageFile, string? profileImageUrl)
         {
-            if (!User.Identity?.IsAuthenticated ?? true)
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            if (!User.Identity?.IsAuthenticated ?? false)
+                return RedirectToAction("Login");
 
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
 
             try
             {
-                // Оновлюємо основні дані
-                if (!string.IsNullOrWhiteSpace(model.FullName))
-                    user.FullName = model.FullName;
-
-                if (model.Birthdate.HasValue)
-                    user.Birthdate = model.Birthdate;
-
-                // Обробка фото профілю
-                string? finalImagePath = null;
-
-                if (profileImageFile != null && profileImageFile.Length > 0)
-                {
-                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                    if (!Directory.Exists(uploadsFolder))
-                        Directory.CreateDirectory(uploadsFolder);
-
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImageFile.FileName);
-                    var filePath = Path.Combine(uploadsFolder, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await profileImageFile.CopyToAsync(stream);
-                    }
-
-                    finalImagePath = "/uploads/" + fileName;
-                    user.profilePicture = finalImagePath;
-                }
-                else if (!string.IsNullOrWhiteSpace(profileImageUrl))
-                {
-                    user.profilePicture = profileImageUrl;
-                }
-
-                var result = await _userManager.UpdateAsync(user);
-                if (result.Succeeded)
-                {
-                    TempData["Success"] = "Profile updated successfully!";
-                }
-                else
-                {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                }
+                await _accountService.UpdateProfile(user, model, profileImageFile, profileImageUrl);
+                TempData["Success"] = "Profile updated successfully!";
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"Error updating profile: {ex.Message}");
+                TempData["Error"] = $"Error updating profile: {ex.Message}";
             }
 
             return RedirectToAction(nameof(Profile));

@@ -54,7 +54,11 @@ namespace BusinessLogic.Services
 
             return items.ToList();
         }
-
+        public async Task<IList<EquipmentCategory>> GetAll()
+        {
+            var items = await repo.GetAllAsync();
+            return items.ToList();
+        }
         public async Task<EquipmentCategory?> GetById(int id)
         {
             return await repo.GetByIdAsync(id);

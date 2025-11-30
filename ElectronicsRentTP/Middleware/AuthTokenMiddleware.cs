@@ -1,11 +1,11 @@
-﻿using DataAccess.Data;
+using DataAccess.Data;
 using DataAccess.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection; // <- ДОДАЙ ЦЕ
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,6 @@ namespace ElectronicsRentTP.Middleware
         public async Task InvokeAsync(HttpContext context, EquipmentRentalDbContext db)
         {
             var path = context.Request.Path;
-
 
             if (path == "/" ||
                 path.StartsWithSegments("/Account/Login") ||
@@ -62,18 +61,14 @@ namespace ElectronicsRentTP.Middleware
                         ClockSkew = TimeSpan.Zero
                     };
                     ClaimsPrincipal? principal = null;
-                    string? userId = null;
 
                     try
                     {
                         principal = handler.ValidateToken(t, parameters, out _);
-                        userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                         context.User = principal;
                     }
                     catch (SecurityTokenExpiredException)
                     {
-                        // Токен протух - для публічних шляхів просто ігноруємо
-                        // Можна видалити протухлий токен з cookie
                         context.Response.Cookies.Delete("sessionToken");
                     }
                     catch
@@ -123,10 +118,7 @@ namespace ElectronicsRentTP.Middleware
 
                 try
                 {
-
                     var jwt = handler.ReadJwtToken(token);
-                    Console.WriteLine(jwt.ValidTo);
-
                     principal = handler.ValidateToken(token, parameters, out _);
                     userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -136,27 +128,17 @@ namespace ElectronicsRentTP.Middleware
                         return;
                     }
 
-                    // Встановлюємо principal як поточного користувача
-                    // Переконуємося, що Identity має правильний AuthenticationType
-                    if (principal.Identity is ClaimsIdentity claimsIdentity)
+                    if (principal.Identity is ClaimsIdentity claimsIdentity && !claimsIdentity.IsAuthenticated)
                     {
-                        // Якщо Identity не автентифіковано, встановлюємо правильний тип
-                        if (!claimsIdentity.IsAuthenticated)
-                        {
-                            var newIdentity = new ClaimsIdentity(claimsIdentity.Claims, "JWT", ClaimTypes.Name, ClaimTypes.Role);
-                            principal = new ClaimsPrincipal(newIdentity);
-                        }
+                        principal = new ClaimsPrincipal(new ClaimsIdentity(claimsIdentity.Claims, "JWT", ClaimTypes.Name, ClaimTypes.Role));
                     }
 
-                    // Сетимо юзера в HttpContext (включно з ролями, якщо вони є в токені)
                     context.User = principal;
-
                     await _next(context);
                     return;
                 }
                 catch (SecurityTokenExpiredException)
                 {
-                    // Токен протух — пробуємо по refresh токену
                     var expiredJwt = handler.ReadJwtToken(token);
                     userId = expiredJwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
@@ -186,7 +168,6 @@ namespace ElectronicsRentTP.Middleware
                         return;
                     }
 
-                    // Генеруємо новий access JWT з ролями
                     var userManager = context.RequestServices.GetRequiredService<UserManager<User>>();
                     var newJwt = await GenerateNewJwtToken(user, context, userManager);
 
@@ -203,25 +184,22 @@ namespace ElectronicsRentTP.Middleware
                     user.RefreshTokens.Add(newRefresh);
                     await db.SaveChangesAsync();
 
-
                     var isHttps = context.Request.IsHttps;
                     context.Response.Cookies.Append("sessionToken", newJwt, new CookieOptions
                     {
                         HttpOnly = true,
-                        Secure = isHttps, // Secure тільки для HTTPS
-                        SameSite = SameSiteMode.Lax, // Lax для кращої сумісності
-                        Expires = DateTime.UtcNow.AddMinutes(60) // Збільшуємо час життя токену
+                        Secure = isHttps,
+                        SameSite = SameSiteMode.Lax,
+                        Expires = DateTime.UtcNow.AddMinutes(60)
                     });
 
-                    // Створюємо новий principal з оновленим токеном
                     var newPrincipal = handler.ValidateToken(newJwt, parameters, out _);
                     if (newPrincipal.Identity is ClaimsIdentity newClaimsIdentity && !newClaimsIdentity.IsAuthenticated)
                     {
-                        var authenticatedIdentity = new ClaimsIdentity(newClaimsIdentity.Claims, "JWT", ClaimTypes.Name, ClaimTypes.Role);
-                        newPrincipal = new ClaimsPrincipal(authenticatedIdentity);
+                        newPrincipal = new ClaimsPrincipal(new ClaimsIdentity(newClaimsIdentity.Claims, "JWT", ClaimTypes.Name, ClaimTypes.Role));
                     }
-                    context.User = newPrincipal;
 
+                    context.User = newPrincipal;
                     await _next(context);
                     return;
                 }
@@ -232,60 +210,7 @@ namespace ElectronicsRentTP.Middleware
                 }
             }
 
-            // Нема токена взагалі
             await RedirectToRegister(context);
         }
 
-
-
-        private async Task<string> GenerateNewJwtToken(User user, HttpContext context, UserManager<User> userManager)
-        {
-            var jwtKey = _config["JwtOptions:Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
-            var jwtIssuer = _config["JwtOptions:Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
-            var jwtAudience = _config["JwtOptions:Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var roles = await userManager.GetRolesAsync(user);
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
-            };
-
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
-
-            var token = new JwtSecurityToken(
-                issuer: jwtIssuer,
-                audience: jwtAudience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(1),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private async Task RedirectToRegister(HttpContext context)
-        {
-            if (context.Request.Cookies.ContainsKey("sessionToken"))
-                context.Response.Cookies.Delete("sessionToken");
-
-            if (context.Features.Get<ISessionFeature>() != null)
-                context.Session.Clear();
-
-            if (!context.Response.HasStarted)
-            {
-                context.Response.Clear();
-                context.Response.Redirect("/Account/Register", false);
-            }
-
-            await Task.CompletedTask;
-        }
-    }
-}
+        private async Task<string> GenerateNewJwtToken(User

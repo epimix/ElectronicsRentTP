@@ -1,4 +1,5 @@
-﻿using DataAccess.Data;
+﻿using BusinessLogic.Interfaces;
+using DataAccess.Data;
 using DataAccess.Data.Entities;
 using DataAccess.Data.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -12,127 +13,48 @@ namespace ElectronicsRentTP.Controllers
     [Authorize]
     public class ChatController : Controller
     {
-        private readonly EquipmentRentalDbContext _context;
+        private readonly IChatService chatService;
 
-        public ChatController(EquipmentRentalDbContext context)
+        public ChatController(IChatService chatService)
         {
-            _context = context;
+            this.chatService = chatService;
         }
 
         [Authorize]
         public async Task<IActionResult> MyMessages()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var chats = await _context.ChatRooms
-                .Include(c => c.Equipment)
-                .Include(c => c.Owner)
-                .Include(c => c.Renter)
-                .Include(c => c.Messages)
-                .Where(c => !c.IsDeleted && (c.OwnerId == userId || c.RenterId == userId))
-                .ToListAsync();
-
-            var vm = chats.Select(c =>
-            {
-                var partner = c.OwnerId == userId ? c.Renter : c.Owner;
-
-                var lastMsg = c.Messages
-                    .OrderByDescending(m => m.SentAt)
-                    .FirstOrDefault();
-
-                return new ChatListItemViewModel
-                {
-                    ChatRoomId = c.Id,
-                    EquipmentId = c.EquipmentId,
-                    EquipmentName = c.Equipment.Name,
-                    EquipmentImage = c.Equipment.ImageUrl,
-
-                    PartnerId = partner.Id,
-                    PartnerName = partner.FullName ?? partner.Email,
-                    PartnerAvatar = partner.profilePicture
-                        ?? "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-
-                    LastMessage = lastMsg?.Text ?? "",
-                    LastMessageTime = lastMsg?.SentAt,
-                    IsMyMessage = lastMsg?.SenderId == userId,
-                    IsPinned = c.IsPinned
-                };
-            }).OrderByDescending(c => c.IsPinned)
-    .ThenByDescending(c => c.LastMessageTime)
-    .ToList();
+            var vm = await chatService.GetMyMessages(userId!);
 
             return View(vm);
         }
-
-
-
 
         [HttpGet]
         public async Task<IActionResult> OpenWithOwner(int equipmentId)
         {
             if (!ModelState.IsValid)
-            {
                 return RedirectToAction("Index", "Home");
-            }
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var equipment = await _context.Equipments
-                .Include(e => e.Owner)
-                .FirstOrDefaultAsync(e => e.Id == equipmentId);
+            var (chatRoomId, exists) = await chatService.CreateOrGetChatRoom(equipmentId, userId!);
 
-            if (equipment == null)
-                return NotFound();
-
-
-            if (equipment.OwnerId == userId)
-            {
-
+            if (!exists)
                 return RedirectToAction("Details", "Equipment", new { id = equipmentId });
-            }
 
-
-            var chatRoom = await _context.ChatRooms
-                .FirstOrDefaultAsync(cr =>
-                    cr.EquipmentId == equipmentId &&
-                    cr.OwnerId == equipment.OwnerId &&
-                    cr.RenterId == userId);
-
-            if (chatRoom == null)
-            {
-                chatRoom = new ChatRoom
-                {
-                    EquipmentId = equipmentId,
-                    OwnerId = equipment.OwnerId!,
-                    RenterId = userId!
-                };
-
-                _context.ChatRooms.Add(chatRoom);
-                await _context.SaveChangesAsync();
-            }
-
-
-            return RedirectToAction("Room", new { chatRoomId = chatRoom.Id });
+            return RedirectToAction("Room", new { chatRoomId = chatRoomId });
         }
 
         [HttpGet]
         public async Task<IActionResult> Room(int chatRoomId)
         {
             if (!ModelState.IsValid)
-            {
                 return RedirectToAction("Index", "Home");
-            }
-            var chatRoom = await _context.ChatRooms
-                .Include(cr => cr.Equipment)
-                .Include(cr => cr.Owner)
-                .Include(cr => cr.Renter)
-                .Include(cr => cr.Messages)
-                .Include(c => c.Messages).ThenInclude(m => m.Sender)
 
-                .FirstOrDefaultAsync(cr => cr.Id == chatRoomId);
+            var chatRoom = await chatService.GetChatRoom(chatRoomId);
 
             if (chatRoom == null)
                 return NotFound();
-
 
             return View(chatRoom);
         }
@@ -141,18 +63,8 @@ namespace ElectronicsRentTP.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var chat = await _context.ChatRooms
-                .FirstOrDefaultAsync(c => c.Id == chatRoomId);
+            await chatService.PinUnpinChatRoom(chatRoomId, userId!, true);
 
-            if (chat == null)
-                return NotFound();
-
-            if (chat.OwnerId != userId && chat.RenterId != userId)
-                return Forbid();
-
-            chat.IsPinned = true;
-
-            await _context.SaveChangesAsync();
             return RedirectToAction("MyMessages");
         }
 
@@ -161,18 +73,8 @@ namespace ElectronicsRentTP.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var chat = await _context.ChatRooms
-                .FirstOrDefaultAsync(c => c.Id == chatRoomId);
+            await chatService.PinUnpinChatRoom(chatRoomId, userId!, false);
 
-            if (chat == null)
-                return NotFound();
-
-            if (chat.OwnerId != userId && chat.RenterId != userId)
-                return Forbid();
-
-            chat.IsPinned = false;
-
-            await _context.SaveChangesAsync();
             return RedirectToAction("MyMessages");
         }
 
@@ -181,18 +83,7 @@ namespace ElectronicsRentTP.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var chat = await _context.ChatRooms
-                .FirstOrDefaultAsync(c => c.Id == chatRoomId);
-
-            if (chat == null)
-                return NotFound();
-
-            if (chat.OwnerId != userId && chat.RenterId != userId)
-                return Forbid();
-
-            chat.IsDeleted = true;
-
-            await _context.SaveChangesAsync();
+            await chatService.Delete(chatRoomId, userId!);
             return RedirectToAction("MyMessages");
         }
 
