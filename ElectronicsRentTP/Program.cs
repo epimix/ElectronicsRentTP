@@ -126,13 +126,19 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        // Перевіряємо, чи можемо підключитися до бази
-        var canConnect = dbContext.Database.CanConnect();
-        if (!canConnect)
+        // Перевіряємо, чи можемо підключитися до бази (обгортаємо в try-catch, щоб не блокувати запуск)
+        bool canConnect = false;
+        try
         {
-            logger.LogWarning("Cannot connect to database. Skipping database initialization.");
+            canConnect = dbContext.Database.CanConnect();
         }
-        else
+        catch (Exception connectEx)
+        {
+            logger.LogWarning(connectEx, "Cannot connect to database during initialization. Connection string might be incorrect. Error: {Error}", connectEx.Message);
+            logger.LogWarning("Skipping database initialization. Please check your connection string in Azure App Service Configuration.");
+        }
+
+        if (canConnect)
         {
             // Додаємо колонку LastOnline до таблиці AspNetUsers, якщо її немає
             // Це має бути виконано ПЕРЕД SeedRolesAndAdmin, щоб уникнути помилок
