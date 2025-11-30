@@ -64,10 +64,22 @@ namespace ElectronicsRentTP.Middleware
                     ClaimsPrincipal? principal = null;
                     string? userId = null;
 
-                    principal = handler.ValidateToken(t, parameters, out _);
-                    userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                    context.User = principal;
+                    try
+                    {
+                        principal = handler.ValidateToken(t, parameters, out _);
+                        userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                        context.User = principal;
+                    }
+                    catch (SecurityTokenExpiredException)
+                    {
+                        // Токен протух - для публічних шляхів просто ігноруємо
+                        // Можна видалити протухлий токен з cookie
+                        context.Response.Cookies.Delete("sessionToken");
+                    }
+                    catch
+                    {
+                        // Інші помилки валідації - ігноруємо для публічних шляхів
+                    }
                 }
 
                 await _next(context);
