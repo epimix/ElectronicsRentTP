@@ -15,7 +15,7 @@ namespace ElectronicsRentTP.Controllers
     {
         private readonly IChatService chatService;
 
-        public ChatController(EquipmentRentalDbContext context, IChatService chatService)
+        public ChatController(IChatService chatService)
         {
             this.chatService = chatService;
         }

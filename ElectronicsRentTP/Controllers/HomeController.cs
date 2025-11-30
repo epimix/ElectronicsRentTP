@@ -13,13 +13,11 @@ namespace ElectronicsRentTP.Controllers
     {
         private readonly IEquipmentService eq;
         private readonly ICategoryService categoryService;
-        private readonly EquipmentRentalDbContext ctx;
 
-        public HomeController(IEquipmentService eq, ICategoryService categoryService, EquipmentRentalDbContext ctx)
+        public HomeController(IEquipmentService eq, ICategoryService categoryService)
         {
             this.eq = eq;
             this.categoryService = categoryService;
-            this.ctx = ctx;
         }
 
         public async Task<IActionResult> Index(
@@ -47,9 +45,8 @@ namespace ElectronicsRentTP.Controllers
                 Items = equipment.ToList(),
                 Pagination = pagination
             };
-
             // Set filter values to ViewBag for form
-            ViewBag.Categories = new SelectList(ctx.EquipmentCategories.ToList(), "Id", "Name", categoryId);
+            ViewBag.Categories = new SelectList(await categoryService.GetAll(), "Id", "Name", categoryId);
             ViewBag.CategoryId = categoryId;
             ViewBag.SearchName = searchName;
             ViewBag.MinPrice = minPrice;

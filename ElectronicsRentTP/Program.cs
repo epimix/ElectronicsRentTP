@@ -40,7 +40,6 @@ builder.Services.AddScoped<IFavService, FavoriteService>();
 builder.Services.AddScoped<IUserServices, UserServices>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
-builder.Services.AddScoped<IFavoriteEquipmentDBService, FavoriteEquipmentDBService>();
 builder.Services.AddScoped<IRentalService, RentalService>();
 builder.Services.AddScoped<IRentalRepository, RentalRepository>();
 builder.Services.AddScoped<IAdvertsService, AdvertsService>();
@@ -48,6 +47,8 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IBalanceService, BalanceService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IComplaintService, ComplaintService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 // -------------------- JWT OPTIONS --------------------
 

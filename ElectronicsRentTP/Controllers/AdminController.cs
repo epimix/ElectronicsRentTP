@@ -15,12 +15,10 @@ namespace ElectronicsRentTP.Controllers
     [Authorize(Roles = "admin")]
     public class AdminController : Controller
     {
-        private readonly EquipmentRentalDbContext _db;
         private readonly UserManager<User> _userManager;
         private readonly IAdminService adminService;
-        public AdminController(EquipmentRentalDbContext db, UserManager<User> userManager, IAdminService adminService)
+        public AdminController(UserManager<User> userManager, IAdminService adminService)
         {
-            _db = db;
             _userManager = userManager;
             this.adminService = adminService;
         }
