@@ -1,5 +1,4 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -33,7 +32,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
-        /* Modern Navbar */
         .navbar-gradient {
             background: var(--primary-gradient) !important;
             backdrop-filter: blur(10px);
@@ -112,13 +110,11 @@
                 box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
             }
 
-        /* Main Content Area */
         main {
             flex: 1;
             padding: 2rem 0;
         }
 
-        /* Modern Footer */
         .footer {
             background: white;
             border-top: 3px solid transparent;
@@ -159,7 +155,6 @@
                     color: var(--primary-dark) !important;
                 }
 
-        /* Navbar Toggler */
         .navbar-toggler {
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 8px;
@@ -175,7 +170,6 @@
             height: 1.5rem;
         }
 
-        /* Responsive adjustments */
         @@media (max-width: 991.98px) {
             .navbar-collapse {
                 margin-top: 1rem;
@@ -196,35 +190,29 @@
             }
         }
 
-        /* Smooth transitions */
         * {
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Container styling */
         .container-xl {
             max-width: 1320px;
         }
 
-        /* Active nav link indicator */
         .nav-link.active {
             background: rgba(255, 255, 255, 0.2);
             font-weight: 600;
         }
 
-        /* Hover effect for navbar items */
         .navbar-nav .nav-item {
             position: relative;
         }
 
-        /* Badge styling improvement */
         .badge.rounded-pill {
             padding: 0.35em 0.65em;
             font-size: 0.75rem;
             font-weight: 700;
         }
 
-        /* Focus states for accessibility */
         .nav-link:focus,
         .btn-outline-light:focus {
             outline: 2px solid rgba(255, 255, 255, 0.5);
@@ -237,8 +225,7 @@
     <header class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-dark navbar-gradient border-0 shadow-sm">
             <div class="container-xl">
-                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home"
-                   asp-action="Index">
+                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
                     <i class="bi bi-cpu-fill"></i>
                     <span>Equipment Rental</span>
                 </a>
@@ -254,7 +241,8 @@
                                 <span>Home</span>
                             </a>
                         </li>
-                        @if (User.IsInRole("admin")){
+                        @if (User.IsInRole("admin"))
+                        {
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Equipment" asp-action="Index">
                                     <i class="bi bi-grid me-1"></i>
@@ -262,7 +250,6 @@
                                 </a>
                             </li>
                         }
-
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Cart" asp-action="Index">
                                 <i class="bi bi-cart me-1"></i>
@@ -277,29 +264,40 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Adverts" asp-action="Index">
-                                <i class="bi bi-megaphone me-2"></i> My Adverts
+                                <i class="bi bi-megaphone me-1"></i>
+                                <span>My Adverts</span>
                             </a>
-
                         </li>
-
-                        @if (User.IsInRole("admin"))
-                        {
-                            <li class="nav-link">
-                                <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="Complaints">
-                                    <i class="bi bi-shield-lock me-1"></i>
-                                    <span>Admin Dashboard</span>
-                                </a>
-
-                            </li>
-                        }
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Rentals" asp-action="MyBookings">
-                                <i class="bi bi-journal-text me-2"></i> My Bookings
+                                <i class="bi bi-journal-text me-1"></i>
+                                <span>My Bookings</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="OwnerRentals" asp-action="Index">
+                                <i class="bi bi-clipboard-check me-1"></i>
+                                <span>Rental Requests</span>
+                            </a>
+                        </li>
+                        @if (User.IsInRole("admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="Complaints">
+                                    <i class="bi bi-shield-lock me-1"></i>
+                                    <span>Admin Panel</span>
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                     <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Balance" asp-action="Index">
+                                <i class="bi bi-wallet2 me-1"></i>
+                                <span>Balance</span>
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a class="btn btn-outline-light d-flex align-items-center gap-2"
                                asp-controller="Account" asp-action="Profile" title="Profile">
